@@ -1,0 +1,79 @@
+---
+config:
+  layout: elk
+---
+classDiagram
+direction RL
+	namespace Driver {
+        class DriverFactory {
+	        ThreadLocal
+	        getWebDriver()
+	        setWebDriver()
+	        startWebDriver()
+        }
+
+        class ChromeDriverManager {
+        }
+
+        class FirefoxDriverManager {
+        }
+
+        class EdgeDriverManager {
+        }
+
+        class DriverManager {
+	        + quitDriver()
+	        + getDriver()
+        }
+
+	}
+	namespace Element {
+        class BaseElement {
+	        locator
+	        by()
+	        click()
+        }
+
+	}
+	namespace Pages {
+        class HomePage {
+        }
+
+	}
+	namespace Test {
+        class BaseTest {
+	        loadConfigs()
+	        startTest()
+	        afterMethod()
+        }
+
+        class TestListener {
+	        onTestStart()
+	        onTestSuccess()
+	        onTestFailure()
+        }
+
+        class TestCase01 {
+        }
+
+	}
+	namespace Report {
+        class AllureManager {
+        }
+
+	}
+
+	<<Abstract>> DriverManager
+
+    ChromeDriverManager -- DriverManager
+    FirefoxDriverManager -- DriverManager
+    EdgeDriverManager -- DriverManager
+    DriverFactory -- ChromeDriverManager
+    DriverFactory -- FirefoxDriverManager
+    DriverFactory -- EdgeDriverManager
+    BaseElement -- HomePage
+    TestListener -- BaseTest
+    TestCase01 -- BaseTest
+    DriverFactory -- BaseTest
+    TestCase01 -- HomePage
+    AllureManager -- TestListener
