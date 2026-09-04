@@ -11,7 +11,20 @@ public class DriverProvider {
 
     static AbstractDriverProvider newInstance(DriverConfig config) {
         try {
-            String fullClassName = config.getDriverProviderLocation();
+            String fullClassName = null;
+            switch (config.getBrowser().toLowerCase()) {
+                case "chrome":
+                    fullClassName = "com.internet.webdriver.selenium.ChromeDriverProvider";
+                    break;
+                case "firefox":
+                    fullClassName = "com.internet.webdriver.selenium.FirefoxDriverProvider";
+                    break; 
+                case "edge":
+                    fullClassName = "com.internet.webdriver.selenium.EdgeDriverProvider";
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported browser: " + config.getBrowser());
+            }
             Class<?> clazz = Class.forName(fullClassName);
 
             Constructor<?> cons = clazz.getDeclaredConstructor();
@@ -31,7 +44,7 @@ public class DriverProvider {
     }
 
     public static void startWebDriver(DriverConfig config) {
-        WebDriver localWebDriver = newInstance(config).createWebDriver(config);
+        WebDriver localWebDriver = newInstance(config).create(config);
         setWebDriver(localWebDriver);
     }
 }
