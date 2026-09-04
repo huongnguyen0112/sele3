@@ -1,0 +1,13 @@
+{
+  "browser": "chrome",
+  "driverProviderLocation": "com.internet.webdriver.selenium.ChromeDriverProvider",
+  "capabilities": {
+  },
+  "arguments": [
+    "--disable-blink-features",
+    "--disable-blink-features=AutomationControlled",
+    "--remote-allow-origins=*"
+  ],
+  "remoteUrl": "",
+  "headless": false
+}
