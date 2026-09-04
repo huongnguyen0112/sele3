@@ -3,6 +3,7 @@ package com.internet.webdriver;
 import com.internet.utils.JsonHelper;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -11,6 +12,7 @@ import java.net.URL;
 import java.util.Map;
 
 @Getter
+@Setter
 @Builder
 @Slf4j
 public class DriverConfig {
@@ -30,14 +32,6 @@ public class DriverConfig {
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
-    }
-
-    public void setRemoteUrl(String remoteUrl) {
-        this.remoteUrl = remoteUrl;
-    }
-
-    public void setHeadless(boolean headless) {
-        this.headless = headless;
     }
 
     public DesiredCapabilities getCapabilities() {

@@ -1,30 +1,34 @@
 package com.internet.webdriver.selenium;
 
 import com.internet.webdriver.DriverConfig;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxDriverLogLevel;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.logging.LoggingPreferences;
 
 import java.util.logging.Level;
 
-public class FirefoxDriverProvider extends AbstractDriverProvider {
+public class FirefoxDriverProvider extends AbstractDriverProvider<FirefoxOptions> {
     @Override
-    public WebDriver createWebDriver(DriverConfig config) {
+    protected FirefoxOptions createOptions(DriverConfig config) {
+        LoggingPreferences logPrefs = new LoggingPreferences();
+        logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
 
-        FirefoxOptions ffOptions = new FirefoxOptions();
-        ffOptions.setLogLevel(FirefoxDriverLogLevel.fromLevel(Level.ALL));
+        FirefoxOptions firefoxOptions = new FirefoxOptions();
+        firefoxOptions.setCapability("goog:loggingPrefs", logPrefs);
 
-        ffOptions.addArguments(config.getArguments());
-        if (config.isHeadless()) ffOptions.addArguments("--headless");
-        ffOptions.merge(config.getCapabilities());
+        if (config.getArguments() != null) firefoxOptions.addArguments(config.getArguments());
 
-        if (config.getRemoteUrl() != null) {
-            return new RemoteWebDriver(config.getRemoteUrl(), ffOptions);
-        }
-        WebDriverManager.firefoxdriver().setup();
-        return new FirefoxDriver(ffOptions);
+        if (config.isHeadless()) firefoxOptions.addArguments("--headless");
+
+        if (config.getCapabilities() != null) firefoxOptions.merge(config.getCapabilities());
+
+        return firefoxOptions;
+    }
+
+    @Override
+    protected WebDriver createLocalDriver(FirefoxOptions options) {
+        return new FirefoxDriver(options);
     }
 }

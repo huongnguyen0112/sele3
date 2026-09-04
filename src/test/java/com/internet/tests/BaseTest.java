@@ -16,8 +16,6 @@ public class BaseTest {
     public void startTest() {
         System.out.println("Pre-condition");
         DriverConfig driverConfig = DriverConfig.loadFromFile(configFile);
-        driverConfig.setRemoteUrl(Constants.REMOTE_URL);
-        driverConfig.setHeadless(Constants.HEADLESS);
         DriverProvider.startWebDriver(driverConfig);
         DriverProvider.getWebDriver().manage().window().maximize();
         DriverProvider.getWebDriver().navigate().to(Constants.BASE_URL);
