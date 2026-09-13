@@ -1,6 +1,5 @@
 {
   "browser": "chrome",
-  "driverProviderLocation": "com.internet.webdriver.selenium.ChromeDriverProvider",
   "capabilities": {
   },
   "arguments": [
