@@ -3,8 +3,6 @@ package com.internet.webdriver;
 import com.google.common.base.Throwables;
 import com.internet.webdriver.selenium.AbstractDriverProvider;
 import org.openqa.selenium.WebDriver;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -21,7 +19,7 @@ public class DriverProvider {
      * @return browser-specific driver provider
      * @throws RuntimeException when the provider cannot be loaded or instantiated
      */
-    static AbstractDriverProvider newInstance(DriverConfig config) {
+    static AbstractDriverProvider<?> newInstance(DriverConfig config) {
         try {
             Properties props = new Properties();
             try (InputStream in = DriverProvider.class.getClassLoader().getResourceAsStream("META-INF/driver.provider.classname.properties")) {
@@ -39,7 +37,7 @@ public class DriverProvider {
 
             Constructor<?> cons = clazz.getDeclaredConstructor();
             Object obj = cons.newInstance();
-            return (AbstractDriverProvider) obj;
+            return (AbstractDriverProvider<?>) obj;
         } catch (Exception e) {
             throw new RuntimeException("Could not create new Driver instance. " + Throwables.getStackTraceAsString(e));
         }
