@@ -14,6 +14,12 @@ import java.util.logging.Level;
 
 @Slf4j
 public class ChromeDriverProvider extends AbstractDriverProvider<ChromeOptions> {
+    /**
+     * Builds Chrome options, including logging, arguments, headless mode, and capabilities.
+     *
+     * @param config driver configuration
+     * @return configured Chrome options
+     */
     @Override
     protected ChromeOptions createOptions(DriverConfig config) {
         LoggingPreferences logPrefs = new LoggingPreferences();
@@ -31,6 +37,12 @@ public class ChromeDriverProvider extends AbstractDriverProvider<ChromeOptions> 
         return chromeOptions;
     }
 
+    /**
+     * Starts a local Chrome browser.
+     *
+     * @param options configured Chrome options
+     * @return started Chrome WebDriver
+     */
     @Override
     protected WebDriver createLocalDriver(ChromeOptions options) {
         return new ChromeDriver(options);

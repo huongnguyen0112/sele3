@@ -23,6 +23,12 @@ public class DriverConfig {
     private String remoteUrl;
     private boolean headless;
 
+    /**
+     * Converts the configured remote URL to a URL object.
+     *
+     * @return configured remote URL, or {@code null} when no remote URL is set
+     * @throws RuntimeException when the configured URL is malformed
+     */
     public URL getRemoteUrl() {
         try {
             if (this.remoteUrl != null && !this.remoteUrl.equals(""))
@@ -34,10 +40,21 @@ public class DriverConfig {
         }
     }
 
+    /**
+     * Converts configured capability values to Selenium capabilities.
+     *
+     * @return Selenium capabilities created from the configuration map
+     */
     public DesiredCapabilities getCapabilities() {
         return new DesiredCapabilities(capabilities);
     }
 
+    /**
+     * Loads a driver configuration from a test resource JSON file.
+     *
+     * @param fileName configuration file name
+     * @return deserialized driver configuration
+     */
     public static DriverConfig loadFromFile(String fileName) {
         String jsonConfigFile = "src/test/resources/configs/" + fileName;
         log.debug("Loading configuration from json file {}", jsonConfigFile);

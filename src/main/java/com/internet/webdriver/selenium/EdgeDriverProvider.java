@@ -10,6 +10,12 @@ import org.openqa.selenium.logging.LoggingPreferences;
 import java.util.logging.Level;
 
 public class EdgeDriverProvider extends AbstractDriverProvider<EdgeOptions> {
+    /**
+     * Builds Edge options, including logging, arguments, headless mode, and capabilities.
+     *
+     * @param config driver configuration
+     * @return configured Edge options
+     */
     @Override
     protected EdgeOptions createOptions(DriverConfig config) {
         LoggingPreferences logPrefs = new LoggingPreferences();
@@ -27,6 +33,12 @@ public class EdgeDriverProvider extends AbstractDriverProvider<EdgeOptions> {
         return edgeOptions;
     }
 
+    /**
+     * Starts a local Edge browser.
+     *
+     * @param options configured Edge options
+     * @return started Edge WebDriver
+     */
     @Override
     protected WebDriver createLocalDriver(EdgeOptions options) {
         return new EdgeDriver(options);

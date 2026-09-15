@@ -10,6 +10,12 @@ import org.openqa.selenium.logging.LoggingPreferences;
 import java.util.logging.Level;
 
 public class FirefoxDriverProvider extends AbstractDriverProvider<FirefoxOptions> {
+    /**
+     * Builds Firefox options, including logging, arguments, headless mode, and capabilities.
+     *
+     * @param config driver configuration
+     * @return configured Firefox options
+     */
     @Override
     protected FirefoxOptions createOptions(DriverConfig config) {
         LoggingPreferences logPrefs = new LoggingPreferences();
@@ -27,6 +33,12 @@ public class FirefoxDriverProvider extends AbstractDriverProvider<FirefoxOptions
         return firefoxOptions;
     }
 
+    /**
+     * Starts a local Firefox browser.
+     *
+     * @param options configured Firefox options
+     * @return started Firefox WebDriver
+     */
     @Override
     protected WebDriver createLocalDriver(FirefoxOptions options) {
         return new FirefoxDriver(options);
