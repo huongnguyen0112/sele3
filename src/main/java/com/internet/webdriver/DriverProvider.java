@@ -3,9 +3,6 @@ package com.internet.webdriver;
 import com.google.common.base.Throwables;
 import com.internet.webdriver.selenium.AbstractDriverProvider;
 import org.openqa.selenium.WebDriver;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import java.lang.reflect.Constructor;
 
@@ -21,18 +18,12 @@ public class DriverProvider {
      */
     static AbstractDriverProvider<?> newInstance(DriverConfig config) {
         try {
-            Properties props = new Properties();
-            try (InputStream in = DriverProvider.class.getClassLoader().getResourceAsStream("META-INF/driver.provider.classname.properties")) {
-                if (in == null) {
-                    throw new IOException("META-INF/driver.provider.classname.properties not found");
-                }
-                props.load(in);
+            String fullClassName = new DriverLoader().loadDriverProviders(config.getBrowser());
+
+            if (fullClassName == null || fullClassName.isBlank()) {
+                throw new IllegalArgumentException("Driver class missing in META-INF/services/com.internet.webdriver.selenium.AbstractDriverProvider for browser: " + config.getBrowser());
             }
 
-            String fullClassName = props.getProperty(config.getBrowser().toLowerCase());
-            if (fullClassName == null || fullClassName.isBlank()) {
-                throw new IllegalArgumentException("pluginClass property missing in META-INF/driver.provider.classname.properties");
-            }
             Class<?> clazz = Class.forName(fullClassName);
 
             Constructor<?> cons = clazz.getDeclaredConstructor();
