@@ -14,7 +14,7 @@ public class DriverLoader {
         for (Object loadedProvider : loader) {
             if (loadedProvider instanceof AbstractDriverProvider<?>) {
                 AbstractDriverProvider<?> provider = (AbstractDriverProvider<?>) loadedProvider;
-                if (provider.getClass().getName().contains(browserName)) {
+                if (provider.getClass().getName().toLowerCase().contains(browserName.toLowerCase())) {
                     driverClassName = provider.getClass().getName();
                 }
             }
