@@ -28,7 +28,7 @@ public class FirefoxDriverProvider extends AbstractDriverProvider<FirefoxOptions
 
         if (config.isHeadless()) firefoxOptions.addArguments("--headless");
 
-        if (config.getCapabilities() != null) firefoxOptions.merge(config.getCapabilities());
+        if (config.getCapabilities() != null) firefoxOptions = firefoxOptions.merge(config.getCapabilities());
 
         return firefoxOptions;
     }

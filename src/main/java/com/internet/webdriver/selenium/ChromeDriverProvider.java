@@ -32,7 +32,7 @@ public class ChromeDriverProvider extends AbstractDriverProvider<ChromeOptions> 
 
         if (config.isHeadless()) chromeOptions.addArguments("--headless=new");
 
-        if (config.getCapabilities() != null) chromeOptions.merge(config.getCapabilities());
+        if (config.getCapabilities() != null) chromeOptions = chromeOptions.merge(config.getCapabilities());
 
         return chromeOptions;
     }

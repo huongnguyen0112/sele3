@@ -6,35 +6,54 @@ import com.internet.webdriver.selenium.AbstractDriverProvider;
 
 public class DriverLoader {
     /**
-     * Loads the registered driver providers and finds the provider matching the browser name.
+     * Loads all registered {@link AbstractDriverProvider} implementations and returns the provider
+     * whose class name matches the requested browser name, ignoring case.
      *
-     * @param browserName the browser name used to match a driver provider class
-     * @return the fully qualified class name of the matching driver provider, or {@code null}
-     *         when no matching provider is found
+     * <p>The browser name is normalized by trimming whitespace. A blank or null value is rejected,
+     * an unsupported browser throws an exception, and multiple matching providers trigger an error.
+     *
+     * @param browserName the browser name used to match a registered driver provider
+     * @return the matching {@link AbstractDriverProvider} instance
+     * @throws IllegalArgumentException if the browser name is blank, no provider matches, or more than
+     *         one provider matches the requested browser
      */
-    public String loadDriverProviders(String browserName) {
+    public AbstractDriverProvider<?> loadDriverProviders(String browserName) {
+        if (browserName == null || browserName.isBlank()) {
+            throw new IllegalArgumentException("Browser name must not be blank");
+        }
+
         // Load all implementations of AbstractDriverProvider
         ServiceLoader<?> loader = ServiceLoader.load(AbstractDriverProvider.class);
 
-        int count = 0;
-        String driverClassName = null;
+        AbstractDriverProvider<?> provider = null;
+        String requestedBrowser = browserName.trim();
         for (Object loadedProvider : loader) {
             if (loadedProvider instanceof AbstractDriverProvider<?>) {
-                AbstractDriverProvider<?> provider = (AbstractDriverProvider<?>) loadedProvider;
-                if (provider.getClass().getName().toLowerCase().contains(browserName.toLowerCase())) {
-                    driverClassName = provider.getClass().getName();
+                AbstractDriverProvider<?> candidate = (AbstractDriverProvider<?>) loadedProvider;
+                String providerIdentifier = candidate.getClass().getSimpleName();
+                if (providerIdentifier.endsWith("DriverProvider")) {
+                    providerIdentifier = providerIdentifier.substring(0,
+                            providerIdentifier.length() - "DriverProvider".length());
+                } else if (providerIdentifier.endsWith("Provider")) {
+                    providerIdentifier = providerIdentifier.substring(0,
+                            providerIdentifier.length() - "Provider".length());
+                }
+
+                if (providerIdentifier.equalsIgnoreCase(requestedBrowser)) {
+                    if (provider != null) {
+                        throw new IllegalArgumentException(
+                                "Multiple driver providers found for browser: " + browserName);
+                    }
+                    provider = candidate;
                 }
             }
-            count++;
         }
 
-        if (count != 0 && driverClassName != null) {
-            System.out.println("Loaded Driver Provider: " + driverClassName);
-        } else {    
-            System.out.println("No Driver Provider found.");
+        if (provider == null) {
+            throw new IllegalArgumentException("Unsupported browser: " + browserName);
         }
-        
-        return driverClassName;
+
+        return provider;
     }
     
 }

@@ -28,7 +28,7 @@ public class EdgeDriverProvider extends AbstractDriverProvider<EdgeOptions> {
 
         if (config.isHeadless()) edgeOptions.addArguments("--headless=new");
 
-        if (config.getCapabilities() != null) edgeOptions.merge(config.getCapabilities());
+        if (config.getCapabilities() != null) edgeOptions = edgeOptions.merge(config.getCapabilities());
 
         return edgeOptions;
     }

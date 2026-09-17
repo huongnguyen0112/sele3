@@ -4,8 +4,6 @@ import com.google.common.base.Throwables;
 import com.internet.webdriver.selenium.AbstractDriverProvider;
 import org.openqa.selenium.WebDriver;
 
-import java.lang.reflect.Constructor;
-
 public class DriverProvider {
     private static final ThreadLocal<WebDriver> WEB_DRIVER = new ThreadLocal<>();
 
@@ -18,17 +16,8 @@ public class DriverProvider {
      */
     static AbstractDriverProvider<?> newInstance(DriverConfig config) {
         try {
-            String fullClassName = new DriverLoader().loadDriverProviders(config.getBrowser());
-
-            if (fullClassName == null || fullClassName.isBlank()) {
-                throw new IllegalArgumentException("Driver class missing in META-INF/services/com.internet.webdriver.selenium.AbstractDriverProvider for browser: " + config.getBrowser());
-            }
-
-            Class<?> clazz = Class.forName(fullClassName);
-
-            Constructor<?> cons = clazz.getDeclaredConstructor();
-            Object obj = cons.newInstance();
-            return (AbstractDriverProvider<?>) obj;
+            AbstractDriverProvider<?> abstractDriverProvider = new DriverLoader().loadDriverProviders(config.getBrowser());
+            return abstractDriverProvider;
         } catch (Exception e) {
             throw new RuntimeException("Could not create new Driver instance. " + Throwables.getStackTraceAsString(e));
         }

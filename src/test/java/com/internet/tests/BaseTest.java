@@ -14,7 +14,7 @@ public class BaseTest {
      */
     @BeforeClass
     @Parameters({"config"})
-    public void loadConfig(@Optional("chrome.config.json") String config) {
+    public void loadConfig(@Optional("chrome.json") String config) {
         configFile = config;
     }
     /**
@@ -22,7 +22,6 @@ public class BaseTest {
      */
     @BeforeMethod
     public void startTest() {
-        System.out.println("Pre-condition");
         DriverConfig driverConfig = DriverConfig.loadFromFile(configFile);
         DriverProvider.startWebDriver(driverConfig);
         DriverProvider.getWebDriver().manage().window().maximize();
@@ -34,8 +33,6 @@ public class BaseTest {
      */
     @AfterMethod
     public void afterMethod() {
-        System.out.println("Post-condition");
-
         DriverProvider.getWebDriver().quit();
     }
 }
