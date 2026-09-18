@@ -31,13 +31,7 @@ public class DriverLoader {
             if (loadedProvider instanceof AbstractDriverProvider<?>) {
                 AbstractDriverProvider<?> candidate = (AbstractDriverProvider<?>) loadedProvider;
                 String providerIdentifier = candidate.getClass().getSimpleName();
-                if (providerIdentifier.endsWith("DriverProvider")) {
-                    providerIdentifier = providerIdentifier.substring(0,
-                            providerIdentifier.length() - "DriverProvider".length());
-                } else if (providerIdentifier.endsWith("Provider")) {
-                    providerIdentifier = providerIdentifier.substring(0,
-                            providerIdentifier.length() - "Provider".length());
-                }
+                providerIdentifier = providerIdentifier.substring(0, providerIdentifier.length() - "DriverProvider".length());
 
                 if (providerIdentifier.equalsIgnoreCase(requestedBrowser)) {
                     if (provider != null) {
