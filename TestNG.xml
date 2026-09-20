@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Test Suite" thread-count="2" parallel="tests">
+    <listeners>
+        <listener class-name="com.internet.util.listeners.TestListener"/>
+    </listeners>
+
+    <test name="EdgeTest">
+        <parameter name="config" value="edge.json" />
+        <classes>
+            <class name="com.internet.tests.search.SearchTests"/>
+        </classes>
+    </test>
+
+    <test name="ChromeTest">
+        <parameter name="config" value="chrome.json" />
+        <classes>
+            <class name="com.internet.tests.search.SearchTests"/>
+        </classes>
+    </test>
+</suite>

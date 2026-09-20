@@ -1,0 +1,12 @@
+{
+  "browser": "chrome",
+  "capabilities": {
+  },
+  "arguments": [
+    "--disable-blink-features",
+    "--disable-blink-features=AutomationControlled",
+    "--remote-allow-origins=*"
+  ],
+  "remoteUrl": "",
+  "headless": false
+}
