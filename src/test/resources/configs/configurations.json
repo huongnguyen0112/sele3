@@ -1,0 +1,13 @@
+{
+  "env": "qat",
+  "test": "testNG.xml",
+  "suite": "smoke",
+  "reports": "allure",
+  "testRetry": 2,
+  "navigationTimeout": 45000,
+  "expectedTimeout": 15000,
+  "actionTimeout": 25000,
+  "pageLoadTimeout": 30000,
+  "timeout": 4000,
+  "pollingInterval": 200
+}

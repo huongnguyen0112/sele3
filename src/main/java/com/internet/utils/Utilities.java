@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Random;
 
 import io.opentelemetry.api.internal.StringUtils;
+import org.openqa.selenium.JavascriptExecutor;
+
+import com.internet.webdriver.DriverProvider;
 
 @Slf4j
 public class Utilities {
@@ -39,5 +42,16 @@ public class Utilities {
     public static String getEnv(String key, String defaultValue) {
         String value = System.getenv(key);
         return StringUtils.isNullOrEmpty(value) ? defaultValue : value;
+    }
+
+    /**
+     * Executes JavaScript in the current browser window.
+     *
+     * @param script JavaScript source to execute
+     * @param args arguments available to the script as {@code arguments}
+     * @return the script result, or {@code null} when the script has no result
+     */
+    public static Object executeJavaScript(String script, Object... args) {
+        return ((JavascriptExecutor) DriverProvider.getWebDriver()).executeScript(script, args);
     }
 }
