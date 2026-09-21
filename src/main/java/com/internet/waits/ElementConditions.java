@@ -8,7 +8,10 @@ public class ElementConditions {
     /** Matches when the element is displayed. */
     public static final ElementCondition VISIBLE = element -> element.isDisplayed();
 
-    /** Matches when the element keeps the same bounding box for consecutive animation frames. */
+    /**
+     * Matches when the element keeps the same bounding box for consecutive
+     * animation frames.
+     */
     public static final ElementCondition STABLE = element -> element.isStable();
 
     /** Matches when the element is enabled. */

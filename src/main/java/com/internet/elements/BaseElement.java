@@ -9,7 +9,6 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-
 import com.internet.webdriver.DriverProvider;
 import com.internet.configurations.Configurations;
 import com.internet.utils.Utilities;
@@ -17,7 +16,8 @@ import com.internet.waits.ElementConditions;
 import com.internet.waits.MyWait;
 
 /**
- * Represents a lazily located element and provides state checks, waits, and interactions.
+ * Represents a lazily located element and provides state checks, waits, and
+ * interactions.
  */
 public class BaseElement {
     protected By by;
@@ -177,7 +177,8 @@ public class BaseElement {
         try {
             Constructor<?> constructor = this.byClass.getConstructor(String.class);
             this.by = (By) constructor.newInstance(this.locator);
-        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
 
@@ -185,13 +186,14 @@ public class BaseElement {
     }
 
     /**
-    * Finds the first matching element, retrying stale references once after the initial lookup.
+     * Finds the first matching element, retrying stale references once after the
+     * initial lookup.
      *
      * @return first matching WebElement
      */
     public WebElement element() {
-        StaleElementReferenceException staleException =
-        new StaleElementReferenceException("Element remained stale after 2 attempts");
+        StaleElementReferenceException staleException = new StaleElementReferenceException(
+                "Element remained stale after 2 attempts");
         for (int attempt = 0; attempt < 2; attempt++) {
             try {
                 return this.parent != null
@@ -205,13 +207,14 @@ public class BaseElement {
     }
 
     /**
-    * Finds all matching elements, retrying stale references once after the initial lookup.
+     * Finds all matching elements, retrying stale references once after the initial
+     * lookup.
      *
      * @return matching WebElements
      */
     public List<WebElement> elements() {
-        StaleElementReferenceException staleException =
-        new StaleElementReferenceException("Element remained stale after 2 attempts");
+        StaleElementReferenceException staleException = new StaleElementReferenceException(
+                "Element remained stale after 2 attempts");
         for (int attempt = 0; attempt < 2; attempt++) {
             try {
                 return this.parent != null
@@ -225,7 +228,8 @@ public class BaseElement {
     }
 
     /**
-     * Checks whether the element keeps the same bounding box across animation frames.
+     * Checks whether the element keeps the same bounding box across animation
+     * frames.
      *
      * @return true when the element is stable
      */
@@ -319,40 +323,58 @@ public class BaseElement {
         return this.element().isEnabled();
     }
 
-    /** Waits until the element is displayed using the configured timeout and polling interval. */
+    /**
+     * Waits until the element is displayed using the configured timeout and polling
+     * interval.
+     */
     public void waitForVisible() {
         MyWait wait = new MyWait(this);
-        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval()).withMessage("Waiting for element to be visible: " + this.locator);
+        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval())
+                .withMessage("Waiting for element to be visible: " + this.locator);
         wait.until(ElementConditions.VISIBLE);
     }
 
-    /** Waits until the element is enabled using the configured timeout and polling interval. */
+    /**
+     * Waits until the element is enabled using the configured timeout and polling
+     * interval.
+     */
     public void waitForEnabled() {
         MyWait wait = new MyWait(this);
-        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval()).withMessage("Waiting for element to be enabled: " + this.locator);
+        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval())
+                .withMessage("Waiting for element to be enabled: " + this.locator);
         wait.until(ElementConditions.ENABLED);
     }
 
-    /** Waits until the element is stable across animation frames using the configured wait settings. */
+    /**
+     * Waits until the element is stable across animation frames using the
+     * configured wait settings.
+     */
     public void waitForStable() {
         MyWait wait = new MyWait(this);
-        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval()).withMessage("Waiting for element to be stable: " + this.locator);
+        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval())
+                .withMessage("Waiting for element to be stable: " + this.locator);
         wait.until(ElementConditions.STABLE);
     }
 
-    /** Waits until the element is enabled and not readonly using the configured wait settings. */
+    /**
+     * Waits until the element is enabled and not readonly using the configured wait
+     * settings.
+     */
     public void waitForEditable() {
         MyWait wait = new MyWait(this);
-        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval()).withMessage("Waiting for element to be editable: " + this.locator);
+        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval())
+                .withMessage("Waiting for element to be editable: " + this.locator);
         wait.until(ElementConditions.EDITABLE);
     }
 
     /** Waits until the element is the pointer hit target at its action point. */
     public void waitForNotOverlaid() {
         MyWait wait = new MyWait(this);
-        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval()).withMessage("Waiting for element to be not overlaid: " + this.locator);
+        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval())
+                .withMessage("Waiting for element to be not overlaid: " + this.locator);
         wait.until(ElementConditions.NOT_OVERLAID);
     }
+
     /** Clicks the element after waiting for it to be actionable. */
     public void click() {
         waitForVisible();
@@ -362,7 +384,10 @@ public class BaseElement {
         this.element().click();
     }
 
-    /** Double-clicks the center of the element after waiting for it to be actionable. */
+    /**
+     * Double-clicks the center of the element after waiting for it to be
+     * actionable.
+     */
     public void doubleClick() {
         waitForVisible();
         waitForStable();
@@ -376,7 +401,10 @@ public class BaseElement {
         Utilities.executeJavaScript(script, element());
     }
 
-    /** Dispatches a mouse-over event at the center of the element after waiting for it to be actionable. */
+    /**
+     * Dispatches a mouse-over event at the center of the element after waiting for
+     * it to be actionable.
+     */
     public void hover() {
         waitForVisible();
         waitForStable();
@@ -423,9 +451,8 @@ public class BaseElement {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Failed to send keys to element: " + this.locator, e);
         }
-        
-    }
 
+    }
 
     /**
      * Checks whether the element is selected.

@@ -14,15 +14,15 @@ public class MyWait extends FluentWait<WebDriver> {
 
     private BaseElement element;
 
-	/**
-	 * Creates a wait using the WebDriver associated with the current thread.
-	 *
-	 * @param element element whose state is evaluated by this wait
-	 */
-	public MyWait(BaseElement element) {
-		super(DriverProvider.getWebDriver());
-		this.element = element;
-	}
+    /**
+     * Creates a wait using the WebDriver associated with the current thread.
+     *
+     * @param element element whose state is evaluated by this wait
+     */
+    public MyWait(BaseElement element) {
+        super(DriverProvider.getWebDriver());
+        this.element = element;
+    }
 
     /**
      * Waits until the supplied condition matches the configured element.
