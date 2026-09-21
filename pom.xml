@@ -10,7 +10,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <aspectj.version>1.9.24</aspectj.version>
-        <selenium-version>4.48.0</selenium-version>
+        <selenium-version>4.36.0</selenium-version>
         <testng-version>7.5.1</testng-version>
         <allure-testng-version>2.13.9</allure-testng-version>
         <log4j-version>2.25.4</log4j-version>

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public class DriverConfig {
     public URL getRemoteUrl() {
         try {
             if (this.remoteUrl != null && !this.remoteUrl.equals(""))
-                return new URL(this.remoteUrl);
+                return URI.create(this.remoteUrl).toURL();
             return null;
         } catch (MalformedURLException e) {
             log.error(e.getMessage());
