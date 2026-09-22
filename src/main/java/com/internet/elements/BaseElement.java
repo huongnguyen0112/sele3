@@ -2,10 +2,10 @@ package com.internet.elements;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 import java.util.List;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -186,45 +186,26 @@ public class BaseElement {
     }
 
     /**
-     * Finds the first matching element, retrying stale references once after the
-     * initial lookup.
+     * Finds the first matching element
      *
      * @return first matching WebElement
      */
     public WebElement element() {
-        StaleElementReferenceException staleException = new StaleElementReferenceException(
-                "Element remained stale after 2 attempts");
-        for (int attempt = 0; attempt < 2; attempt++) {
-            try {
-                return this.parent != null
-                        ? this.parent.element().findElement(this.by)
-                        : this.webDriver().findElement(this.by);
-            } catch (StaleElementReferenceException e) {
-                staleException = e;
-            }
-        }
-        throw staleException;
+        return this.parent != null
+                ? this.parent.element().findElement(this.by)
+                : this.webDriver().findElement(this.by);
+
     }
 
     /**
-     * Finds all matching elements, retrying stale references once after the initial
-     * lookup.
+     * Finds all matching elements
      *
      * @return matching WebElements
      */
     public List<WebElement> elements() {
-        StaleElementReferenceException staleException = new StaleElementReferenceException(
-                "Element remained stale after 2 attempts");
-        for (int attempt = 0; attempt < 2; attempt++) {
-            try {
-                return this.parent != null
-                        ? this.parent.element().findElements(this.by)
-                        : this.webDriver().findElements(this.by);
-            } catch (StaleElementReferenceException e) {
-                staleException = e;
-            }
-        }
-        throw staleException;
+        return this.parent != null
+                ? this.parent.element().findElements(this.by)
+                : this.webDriver().findElements(this.by);
     }
 
     /**
@@ -236,27 +217,39 @@ public class BaseElement {
     public boolean isStable() {
         String script = """
                 const element = arguments[0];
-                const done = arguments[arguments.length - 1];
-                let previous;
+                const interval = 16;
+                const duration = 100;
 
-                function sample() {
-                    if (!element.isConnected) {
-                        done(false);
-                        return;
-                    }
-
-                    const rect = element.getBoundingClientRect();
-                    const current = [rect.x, rect.y, rect.width, rect.height];
-                    if (previous && current.every((value, index) => value === previous[index])) {
-                        done(true);
-                        return;
-                    }
-
-                    previous = current;
-                    requestAnimationFrame(sample);
+                if (!element || !element.isConnected) {
+                    return false;
                 }
 
-                requestAnimationFrame(sample);
+                const snapshot = () => {
+                    const rect = element.getBoundingClientRect();
+                    return [rect.top, rect.left, rect.width, rect.height, element.innerHTML];
+                };
+
+                return new Promise(resolve => {
+                    let previous = snapshot();
+                    let stableTime = 0;
+                    const check = setInterval(() => {
+                        if (!element.isConnected) {
+                            clearInterval(check);
+                            resolve(false);
+                            return;
+                        }
+
+                        const current = snapshot();
+                        const unchanged = current.every((value, index) => value === previous[index]);
+                        previous = current;
+                        stableTime = unchanged ? stableTime + interval : 0;
+
+                        if (stableTime >= duration) {
+                            clearInterval(check);
+                            resolve(true);
+                        }
+                    }, interval);
+                });
                 """;
         return Boolean.TRUE.equals(Utilities.executeJavaScript(script, element()));
     }
@@ -329,7 +322,7 @@ public class BaseElement {
      */
     public void waitForVisible() {
         MyWait wait = new MyWait(this);
-        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval())
+        wait.withTimeout(Duration.ofMillis(CONFIGURATIONS.getTimeout())).pollingEvery(Duration.ofMillis(CONFIGURATIONS.getPollingInterval()))
                 .withMessage("Waiting for element to be visible: " + this.locator);
         wait.until(ElementConditions.VISIBLE);
     }
@@ -340,7 +333,7 @@ public class BaseElement {
      */
     public void waitForEnabled() {
         MyWait wait = new MyWait(this);
-        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval())
+        wait.withTimeout(Duration.ofMillis(CONFIGURATIONS.getTimeout())).pollingEvery(Duration.ofMillis(CONFIGURATIONS.getPollingInterval()))
                 .withMessage("Waiting for element to be enabled: " + this.locator);
         wait.until(ElementConditions.ENABLED);
     }
@@ -351,7 +344,7 @@ public class BaseElement {
      */
     public void waitForStable() {
         MyWait wait = new MyWait(this);
-        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval())
+        wait.withTimeout(Duration.ofMillis(CONFIGURATIONS.getTimeout())).pollingEvery(Duration.ofMillis(CONFIGURATIONS.getPollingInterval()))
                 .withMessage("Waiting for element to be stable: " + this.locator);
         wait.until(ElementConditions.STABLE);
     }
@@ -362,7 +355,7 @@ public class BaseElement {
      */
     public void waitForEditable() {
         MyWait wait = new MyWait(this);
-        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval())
+        wait.withTimeout(Duration.ofMillis(CONFIGURATIONS.getTimeout())).pollingEvery(Duration.ofMillis(CONFIGURATIONS.getPollingInterval()))
                 .withMessage("Waiting for element to be editable: " + this.locator);
         wait.until(ElementConditions.EDITABLE);
     }
@@ -370,7 +363,7 @@ public class BaseElement {
     /** Waits until the element is the pointer hit target at its action point. */
     public void waitForNotOverlaid() {
         MyWait wait = new MyWait(this);
-        wait.withTimeout(CONFIGURATIONS.getTimeout()).pollingEvery(CONFIGURATIONS.getPollingInterval())
+        wait.withTimeout(Duration.ofMillis(CONFIGURATIONS.getTimeout())).pollingEvery(Duration.ofMillis(CONFIGURATIONS.getPollingInterval()))
                 .withMessage("Waiting for element to be not overlaid: " + this.locator);
         wait.until(ElementConditions.NOT_OVERLAID);
     }
