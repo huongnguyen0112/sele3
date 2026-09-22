@@ -374,7 +374,7 @@ public class BaseElement {
         waitForStable();
         waitForEnabled();
         waitForNotOverlaid();
-        this.element().click();
+        element().click();
     }
 
     /**
@@ -426,7 +426,7 @@ public class BaseElement {
         waitForEnabled();
         waitForNotOverlaid();
         waitForEditable();
-        this.element().clear();
+        element().clear();
     }
 
     /**
@@ -440,7 +440,7 @@ public class BaseElement {
         waitForNotOverlaid();
         waitForEditable();
         try {
-            this.element().sendKeys(keysToSend);
+            element().sendKeys(keysToSend);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Failed to send keys to element: " + this.locator, e);
         }
@@ -453,7 +453,7 @@ public class BaseElement {
      * @return true when the element is selected
      */
     public boolean isChecked() {
-        return this.element().isSelected();
+        return element().isSelected();
     }
 
     /** Checks the element when it is not already selected. */
@@ -463,7 +463,7 @@ public class BaseElement {
         waitForEnabled();
         waitForNotOverlaid();
         if (!isChecked()) {
-            this.element().click();
+            element().click();
         }
     }
 
@@ -474,7 +474,7 @@ public class BaseElement {
         waitForEnabled();
         waitForNotOverlaid();
         if (isChecked()) {
-            this.element().click();
+            element().click();
         }
     }
 
@@ -485,7 +485,7 @@ public class BaseElement {
      */
     public String getText() {
         waitForVisible();
-        return this.element().getText();
+        return element().getText();
     }
 
     /**
@@ -496,6 +496,6 @@ public class BaseElement {
      */
     public String getAttribute(String name) {
         waitForVisible();
-        return this.element().getAttribute(name);
+        return element().getAttribute(name);
     }
 }
