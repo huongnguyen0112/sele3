@@ -1,11 +1,15 @@
 package com.internet.utils;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonParseException;
 import com.google.gson.stream.JsonReader;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.time.Duration;
 
 @Slf4j
 public class JsonHelper {
@@ -28,8 +32,20 @@ public class JsonHelper {
             throw new RuntimeException(jsonFile + "does not exist");
         }
 
-        GsonBuilder builder = new GsonBuilder();
+        JsonDeserializer<Duration> durationDeserializer = (json, type, context) -> {
+            if (json.isJsonPrimitive() && json.getAsJsonPrimitive().isNumber()) {
+                return Duration.ofMillis(json.getAsLong());
+            }
+            if (json.isJsonPrimitive() && json.getAsJsonPrimitive().isString()) {
+                return Duration.parse(json.getAsString());
+            }
+            throw new JsonParseException("Duration must be milliseconds or ISO-8601 text");
+        };
 
-        return builder.create().fromJson(reader, clazz);
+        GsonBuilder builder = new GsonBuilder()
+                .registerTypeAdapter(Duration.class, durationDeserializer);
+
+        Gson gson = builder.create();
+        return gson.fromJson(reader, clazz);
     }
 }

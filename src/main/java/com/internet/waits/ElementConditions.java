@@ -22,10 +22,4 @@ public class ElementConditions {
 
     /** Matches when the element is the pointer hit target at the action point. */
     public static final ElementCondition NOT_OVERLAID = element -> element.isNotOverlaid();
-
-    /** Matches when the element is not displayed. */
-    public static final ElementCondition NOT_VISIBLE = element -> !element.isDisplayed();
-
-    /** Matches when the element is not enabled. */
-    public static final ElementCondition NOT_ENABLED = element -> !element.isEnabled();
 }

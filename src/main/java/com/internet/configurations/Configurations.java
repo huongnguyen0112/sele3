@@ -1,5 +1,7 @@
 package com.internet.configurations;
 
+import java.time.Duration;
+
 import com.internet.utils.JsonHelper;
 import com.internet.utils.Utilities;
 
@@ -13,17 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 @Builder
 @Slf4j
 public class Configurations {
-        private String env;
-        private String test;
-        private String suite;
         private String reports;
-        private Integer retry;
-        private Integer navigationTimeout;
-        private Integer expectedTimeout;
-        private Integer actionTimeout;
-        private Integer pageloadTimeout;
-        private Integer timeout;
-        private Integer pollingInterval;
+        private Duration timeout;
+        private Duration pollingInterval;
 
         /**
          * Loads a configuration from a test resource JSON file.
@@ -37,166 +31,85 @@ public class Configurations {
                 return JsonHelper.fromJsonFile(jsonConfigFile, Configurations.class);
         }
 
-        public static Configurations init() {
-                Configurations configurations = loadFromFile("configurations.json");
-                if (configurations == null) {
-                        configurations = Configurations.builder()
-                                        .env(
-                                                        System.getProperty(
-                                                                        "env",
-                                                                        Utilities.getEnv(
-                                                                                        "ENV",
-                                                                                        "qat")))
-                                        .test(
-                                                        System.getProperty(
-                                                                        "test",
-                                                                        Utilities.getEnv(
-                                                                                        "TEST",
-                                                                                        "testNG.xml")))
-                                        .suite(
-                                                        System.getProperty(
-                                                                        "suite",
-                                                                        Utilities.getEnv(
-                                                                                        "SUITE",
-                                                                                        "smoke")))
-                                        .reports(
-                                                        System.getProperty(
-                                                                        "reports",
-                                                                        Utilities.getEnv(
-                                                                                        "REPORTS",
-                                                                                        "allure")))
-                                        .retry(
-                                                        Integer.parseInt(
-                                                                        System.getProperty(
-                                                                                        "retry",
-                                                                                        Utilities.getEnv(
-                                                                                                        "RETRY",
-                                                                                                        "2"))))
-                                        .navigationTimeout(
-                                                        Integer.parseInt(
-                                                                        System.getProperty(
-                                                                                        "navigation.timeout",
-                                                                                        Utilities.getEnv(
-                                                                                                        "NAVIGATION_TIMEOUT",
-                                                                                                        "45000"))))
-                                        .expectedTimeout(
-                                                        Integer.parseInt(
-                                                                        System.getProperty(
-                                                                                        "expected.timeout",
-                                                                                        Utilities.getEnv(
-                                                                                                        "EXPECTED_TIMEOUT",
-                                                                                                        "15000"))))
-                                        .actionTimeout(
-                                                        Integer.parseInt(
-                                                                        System.getProperty(
-                                                                                        "action.timeout",
-                                                                                        Utilities.getEnv(
-                                                                                                        "ACTION_TIMEOUT",
-                                                                                                        "25000"))))
-                                        .pageloadTimeout(
-                                                        Integer.parseInt(
-                                                                        System.getProperty(
-                                                                                        "pageload.timeout",
-                                                                                        Utilities.getEnv(
-                                                                                                        "PAGE_LOAD_TIMEOUT",
-                                                                                                        "30000"))))
-                                        .timeout(
-                                                        Integer.parseInt(
-                                                                        System.getProperty(
-                                                                                        "timeout",
-                                                                                        Utilities.getEnv(
-                                                                                                        "TIMEOUT",
-                                                                                                        "10000"))))
-                                        .pollingInterval(
-                                                        Integer.parseInt(
-                                                                        System.getProperty(
-                                                                                        "polling.interval",
-                                                                                        Utilities.getEnv(
-                                                                                                        "POLLING_INTERVAL",
-                                                                                                        "200"))))
-                                        .build();
-                } else {
-                        configurations.setEnv(
-                                        System.getProperty(
-                                                        "env",
-                                                        Utilities.getEnv(
-                                                                        "ENV",
-                                                                        configurations.getEnv())));
-                        configurations.setTest(
-                                        System.getProperty(
-                                                        "test",
-                                                        Utilities.getEnv(
-                                                                        "TEST",
-                                                                        configurations.getTest())));
-                        configurations.setSuite(
-                                        System.getProperty(
-                                                        "suite",
-                                                        Utilities.getEnv(
-                                                                        "SUITE",
-                                                                        configurations.getSuite())));
-                        configurations.setReports(
-                                        System.getProperty(
-                                                        "reports",
-                                                        Utilities.getEnv(
-                                                                        "REPORTS",
-                                                                        configurations.getReports())));
-                        configurations.setRetry(
-                                        Integer.parseInt(
-                                                        System.getProperty(
-                                                                        "retry",
-                                                                        Utilities.getEnv(
-                                                                                        "RETRY",
-                                                                                        configurations.getRetry()
-                                                                                                        .toString()))));
-                        configurations.setNavigationTimeout(
-                                        Integer.parseInt(
-                                                        System.getProperty(
-                                                                        "navigation.timeout",
-                                                                        Utilities.getEnv(
-                                                                                        "NAVIGATION_TIMEOUT",
-                                                                                        configurations.getNavigationTimeout()
-                                                                                                        .toString()))));
-                        configurations.setExpectedTimeout(
-                                        Integer.parseInt(
-                                                        System.getProperty(
-                                                                        "expected.timeout",
-                                                                        Utilities.getEnv(
-                                                                                        "EXPECTED_TIMEOUT",
-                                                                                        configurations.getExpectedTimeout()
-                                                                                                        .toString()))));
-                        configurations.setActionTimeout(
-                                        Integer.parseInt(
-                                                        System.getProperty(
-                                                                        "action.timeout",
-                                                                        Utilities.getEnv(
-                                                                                        "ACTION_TIMEOUT",
-                                                                                        configurations.getActionTimeout()
-                                                                                                        .toString()))));
-                        configurations.setPageloadTimeout(
-                                        Integer.parseInt(
-                                                        System.getProperty(
-                                                                        "pageload.timeout",
-                                                                        Utilities.getEnv(
-                                                                                        "PAGE_LOAD_TIMEOUT",
-                                                                                        configurations.getPageloadTimeout()
-                                                                                                        .toString()))));
-                        configurations.setTimeout(
-                                        Integer.parseInt(
-                                                        System.getProperty(
-                                                                        "timeout",
-                                                                        Utilities.getEnv(
-                                                                                        "TIMEOUT",
-                                                                                        configurations.getTimeout()
-                                                                                                        .toString()))));
-                        configurations.setPollingInterval(
-                                        Integer.parseInt(
-                                                        System.getProperty(
-                                                                        "polling.interval",
-                                                                        Utilities.getEnv(
-                                                                                        "POLLING_INTERVAL",
-                                                                                        configurations.getPollingInterval()
-                                                                                                        .toString()))));
+        /**
+         * Resolves a string configuration value from a system property, environment
+         * variable,
+         * or fallback value, in that order.
+         *
+         * @param systemPropertyKey system property name
+         * @param environmentKey    environment variable name
+         * @param defaultValue      fallback value
+         * @return resolved configuration value
+         */
+        private static String setValue(String systemPropertyKey, String environmentKey, String defaultValue) {
+                return System.getProperty(systemPropertyKey, Utilities.getEnv(environmentKey, defaultValue));
+        }
 
+        /**
+         * Resolves a duration from a system property, environment variable, or fallback
+         * duration.
+         * The configured override value is interpreted as milliseconds.
+         *
+         * @param systemPropertyKey system property name
+         * @param environmentKey    environment variable name
+         * @param defaultValue      fallback duration
+         * @return resolved duration
+         */
+        private static Duration setValue(String systemPropertyKey, String environmentKey, Duration defaultValue) {
+                String value = System.getProperty(systemPropertyKey,
+                                Utilities.getEnv(environmentKey, String.valueOf(defaultValue.toMillis())));
+                return Duration.ofMillis(Long.parseLong(value));
+        }
+
+        /**
+         * Loads the base configuration and applies system property or environment
+         * variable
+         * overrides, falling back to the default report and timing values when
+         * necessary.
+         *
+         * @return initialized configuration
+         */
+        public static Configurations init() {
+            Configurations configurations = loadFromFile("configurations.json");
+
+            if (configurations == null) {
+                configurations = Configurations.builder()
+                    .reports(
+                        setValue(
+                            SystemPropertyKey.REPORTS,
+                            EnvironmentKey.REPORTS,
+                            "allure"))
+                    .timeout(
+                        Duration.ofMillis(
+                             Long.parseLong(
+                                setValue(
+                                    SystemPropertyKey.TIMEOUT,
+                                    EnvironmentKey.TIMEOUT,
+                                    "10000"))))
+                    .pollingInterval(
+                        Duration.ofMillis(
+                            Long.parseLong(
+                                setValue(
+                                    SystemPropertyKey.POLLING_INTERVAL,
+                                    EnvironmentKey.POLLING_INTERVAL,
+                                    "200"))))
+                    .build();
+                } else {
+                    configurations.setReports(
+                        setValue(
+                            SystemPropertyKey.REPORTS,
+                            EnvironmentKey.REPORTS,
+                            configurations.getReports()));
+                    configurations.setTimeout(
+                        setValue(
+                            SystemPropertyKey.TIMEOUT,
+                            EnvironmentKey.TIMEOUT,
+                            configurations.getTimeout()));
+                    configurations.setPollingInterval(
+                        setValue(
+                            SystemPropertyKey.POLLING_INTERVAL,
+                            EnvironmentKey.POLLING_INTERVAL,
+                            configurations.getPollingInterval()));
                 }
 
                 return configurations;
