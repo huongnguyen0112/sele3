@@ -8,7 +8,6 @@ import java.util.function.Supplier;
 
 import org.jspecify.annotations.NonNull;
 import org.openqa.selenium.By;
-import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -62,32 +61,32 @@ public class BaseElement {
      *
      * @param action the action to perform on the element
      */
-    private void actionWithStaleRetry(Consumer<WebElement> action) {
-        withStaleRetry(() -> {
+    private void actionWithRetry(Consumer<WebElement> action) {
+        withRetry(() -> {
             action.accept(element());
             return null;
         });
     }
 
     /**
-     * Executes an element operation and retries when the element becomes stale.
+     * Executes an element operation and retries until it succeeds or times out.
      *
      * @param operation the operation to perform
      * @param <T> the operation result type
      * @return the operation result
      */
-    private <T> T withStaleRetry(Supplier<T> operation) {
+    private <T> T withRetry(Supplier<T> operation) {
         class Result {
             private T value;
         }
 
         Result result = new Result();
-        MyWait wait = myWait().configuredWait("Retrying stale element: " + this.locator);
+        MyWait wait = myWait().configuredWait("Retrying operation: " + this.locator);
         wait.waitUntil(ignored -> {
             try {
                 result.value = operation.get();
                 return true;
-            } catch (StaleElementReferenceException e) {
+            } catch (Exception e) {
                 return false;
             }
         });
@@ -175,7 +174,7 @@ public class BaseElement {
                     }, interval);
                 });
                 """;
-        return withStaleRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
+        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
     }
 
     /**
@@ -198,7 +197,7 @@ public class BaseElement {
                 return element.matches(':enabled') && !nativeReadonly
                         && !(ariaReadonly && supportedRoles.has(role));
                 """;
-        return withStaleRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
+        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
     }
 
     /**
@@ -220,7 +219,7 @@ public class BaseElement {
                 const hitTarget = document.elementFromPoint(x, y);
                 return hitTarget === element || element.contains(hitTarget);
                 """;
-        return withStaleRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
+        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
     }
 
     /**
@@ -229,7 +228,7 @@ public class BaseElement {
      * @return true if the element is visible, otherwise false
      */
     public boolean isDisplayed() {
-        return withStaleRetry(() -> element().isDisplayed());
+        return withRetry(() -> element().isDisplayed());
     }
 
     /**
@@ -238,7 +237,7 @@ public class BaseElement {
      * @return true if the element is enabled, otherwise false
      */
     public boolean isEnabled() {
-        return withStaleRetry(() -> element().isEnabled());
+        return withRetry(() -> element().isEnabled());
     }
 
     /**
@@ -247,7 +246,7 @@ public class BaseElement {
      * @return true if the element is selected, otherwise false
      */
     public boolean isChecked() {
-        return withStaleRetry(() -> element().isSelected());
+        return withRetry(() -> element().isSelected());
     }
 
     /**
@@ -303,7 +302,7 @@ public class BaseElement {
         waitForStable();
         waitForEnabled();
         waitForNotOverlaid();
-        actionWithStaleRetry(WebElement::click);
+        actionWithRetry(WebElement::click);
     }
 
     /**
@@ -319,7 +318,7 @@ public class BaseElement {
                 "const y = rect.top + rect.height / 2;" +
                 "element.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, cancelable: true, clientX: x, clientY: y }));";
 
-        actionWithStaleRetry(element -> Utilities.executeJavaScript(script, element));
+        actionWithRetry(element -> Utilities.executeJavaScript(script, element));
     }
 
     /**
@@ -340,7 +339,7 @@ public class BaseElement {
         waitForEnabled();
         waitForNotOverlaid();
         waitForEditable();
-        actionWithStaleRetry(element -> element.clear());
+        actionWithRetry(element -> element.clear());
     }
 
     /**
@@ -353,7 +352,7 @@ public class BaseElement {
         waitForEnabled();
         waitForNotOverlaid();
         waitForEditable();
-        actionWithStaleRetry(element -> {
+        actionWithRetry(element -> {
             try {
                 element.sendKeys(keysToSend);
             } catch (IllegalArgumentException e) {
@@ -396,7 +395,7 @@ public class BaseElement {
      */
     public String getText() {
         waitForVisible();
-        return withStaleRetry(() -> element().getText());
+        return withRetry(() -> element().getText());
     }
 
     /**
@@ -407,7 +406,7 @@ public class BaseElement {
      */
     public String getAttribute(@NonNull String name) {
         waitForVisible();
-        return withStaleRetry(() -> element().getAttribute(name));
+        return withRetry(() -> element().getAttribute(name));
     }
 }
 
