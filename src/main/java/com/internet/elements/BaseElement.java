@@ -90,7 +90,12 @@ public class BaseElement {
                 return false;
             }
         });
-        return result.value;
+        
+        if (result.value != null) {
+            return result.value;
+        } else {
+            throw new RuntimeException("Operation failed after retries: " + this.locator);
+        }
     }
 
     /**
