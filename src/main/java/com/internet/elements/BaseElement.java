@@ -61,21 +61,25 @@ public class BaseElement {
      *
      * @param action the action to perform on the element
      */
-    private void actionWithRetry(Consumer<WebElement> action) {
+    @SafeVarargs
+    private void actionWithRetry(Consumer<WebElement> action,
+            Class<? extends RuntimeException>... retryableExceptions) {
         withRetry(() -> {
             action.accept(element());
             return null;
-        });
+        },
+                retryableExceptions);
     }
 
     /**
      * Executes an element operation and retries until it succeeds or times out.
      *
      * @param operation the operation to perform
-     * @param <T> the operation result type
+     * @param <T>       the operation result type
      * @return the operation result
      */
-    private <T> T withRetry(Supplier<T> operation) {
+    @SafeVarargs
+    private final <T> T withRetry(Supplier<T> operation, Class<? extends RuntimeException>... retryableExceptions) {
         class Result {
             private T value;
         }
@@ -86,8 +90,13 @@ public class BaseElement {
             try {
                 result.value = operation.get();
                 return true;
-            } catch (Exception e) {
-                return false;
+            } catch (RuntimeException e) {
+                for (Class<? extends RuntimeException> exception : retryableExceptions) {
+                    if (exception.isInstance(e)) {
+                        return false;
+                    }
+                }
+                throw e;
             }
         });
         return result.value;
@@ -174,7 +183,8 @@ public class BaseElement {
                     }, interval);
                 });
                 """;
-        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
+        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())),
+                RuntimeException.class);
     }
 
     /**
@@ -197,14 +207,16 @@ public class BaseElement {
                 return element.matches(':enabled') && !nativeReadonly
                         && !(ariaReadonly && supportedRoles.has(role));
                 """;
-        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
+        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())),
+                RuntimeException.class);
     }
 
     /**
      * Checks whether the element is not covered by another element at its action
      * point.
      *
-     * @return true when the element is the hit target at its center, otherwise false
+     * @return true when the element is the hit target at its center, otherwise
+     *         false
      */
     public boolean isNotOverlaid() {
         String script = """
@@ -219,7 +231,8 @@ public class BaseElement {
                 const hitTarget = document.elementFromPoint(x, y);
                 return hitTarget === element || element.contains(hitTarget);
                 """;
-        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
+        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())),
+                RuntimeException.class);
     }
 
     /**
@@ -228,7 +241,7 @@ public class BaseElement {
      * @return true if the element is visible, otherwise false
      */
     public boolean isDisplayed() {
-        return withRetry(() -> element().isDisplayed());
+        return withRetry(() -> element().isDisplayed(), RuntimeException.class);
     }
 
     /**
@@ -237,7 +250,7 @@ public class BaseElement {
      * @return true if the element is enabled, otherwise false
      */
     public boolean isEnabled() {
-        return withRetry(() -> element().isEnabled());
+        return withRetry(() -> element().isEnabled(), RuntimeException.class);
     }
 
     /**
@@ -246,7 +259,7 @@ public class BaseElement {
      * @return true if the element is selected, otherwise false
      */
     public boolean isChecked() {
-        return withRetry(() -> element().isSelected());
+        return withRetry(() -> element().isSelected(), RuntimeException.class);
     }
 
     /**
@@ -302,7 +315,7 @@ public class BaseElement {
         waitForStable();
         waitForEnabled();
         waitForNotOverlaid();
-        actionWithRetry(WebElement::click);
+        actionWithRetry(WebElement::click, RuntimeException.class);
     }
 
     /**
@@ -318,7 +331,7 @@ public class BaseElement {
                 "const y = rect.top + rect.height / 2;" +
                 "element.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, cancelable: true, clientX: x, clientY: y }));";
 
-        actionWithRetry(element -> Utilities.executeJavaScript(script, element));
+        actionWithRetry(element -> Utilities.executeJavaScript(script, element), RuntimeException.class);
     }
 
     /**
@@ -339,7 +352,7 @@ public class BaseElement {
         waitForEnabled();
         waitForNotOverlaid();
         waitForEditable();
-        actionWithRetry(element -> element.clear());
+        actionWithRetry(element -> element.clear(), RuntimeException.class);
     }
 
     /**
@@ -358,7 +371,7 @@ public class BaseElement {
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Failed to send keys to element: " + this.locator, e);
             }
-        });
+        }, RuntimeException.class);
 
     }
 
@@ -395,7 +408,7 @@ public class BaseElement {
      */
     public String getText() {
         waitForVisible();
-        return withRetry(() -> element().getText());
+        return withRetry(() -> element().getText(), RuntimeException.class);
     }
 
     /**
@@ -406,7 +419,7 @@ public class BaseElement {
      */
     public String getAttribute(@NonNull String name) {
         waitForVisible();
-        return withRetry(() -> element().getAttribute(name));
+        return withRetry(() -> element().getAttribute(name), RuntimeException.class);
     }
 }
 
