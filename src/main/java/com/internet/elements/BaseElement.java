@@ -112,7 +112,6 @@ public class BaseElement {
      *
      * @return the first WebElement matching the locator
      */
-    @SuppressWarnings("null")
     public WebElement element() {
         return this.webDriver().findElement(this.by);
     }
@@ -122,7 +121,6 @@ public class BaseElement {
      *
      * @return all WebElements matching the locator
      */
-    @SuppressWarnings("null")
     public List<WebElement> elements() {
         return this.webDriver().findElements(this.by);
     }
@@ -170,7 +168,7 @@ public class BaseElement {
                     }, interval);
                 });
                 """;
-        return Boolean.TRUE.equals(Utilities.executeJavaScript(script, element()));
+        return withStaleRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
     }
 
     /**
@@ -193,7 +191,7 @@ public class BaseElement {
                 return element.matches(':enabled') && !nativeReadonly
                         && !(ariaReadonly && supportedRoles.has(role));
                 """;
-        return Boolean.TRUE.equals(Utilities.executeJavaScript(script, element()));
+        return withStaleRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
     }
 
     /**
@@ -215,7 +213,7 @@ public class BaseElement {
                 const hitTarget = document.elementFromPoint(x, y);
                 return hitTarget === element || element.contains(hitTarget);
                 """;
-        return Boolean.TRUE.equals(Utilities.executeJavaScript(script, element()));
+        return withStaleRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())));
     }
 
     /**
@@ -224,7 +222,7 @@ public class BaseElement {
      * @return true if the element is visible, otherwise false
      */
     public boolean isDisplayed() {
-        return element().isDisplayed();
+        return withStaleRetry(() -> element().isDisplayed());
     }
 
     /**
@@ -233,7 +231,7 @@ public class BaseElement {
      * @return true if the element is enabled, otherwise false
      */
     public boolean isEnabled() {
-        return element().isEnabled();
+        return withStaleRetry(() -> element().isEnabled());
     }
 
     /**
@@ -242,7 +240,7 @@ public class BaseElement {
      * @return true if the element is selected, otherwise false
      */
     public boolean isChecked() {
-        return element().isSelected();
+        return withStaleRetry(() -> element().isSelected());
     }
 
     /**
@@ -293,7 +291,6 @@ public class BaseElement {
     /**
      * Clicks the element after waiting for it to be actionable.
      */
-    @SuppressWarnings("null")
     public void click() {
         waitForVisible();
         waitForStable();
@@ -344,7 +341,6 @@ public class BaseElement {
      *
      * @param keysToSend the keystrokes to send
      */
-    @SuppressWarnings("null")
     public void sendKeys(CharSequence... keysToSend) {
         waitForVisible();
         waitForEnabled();
