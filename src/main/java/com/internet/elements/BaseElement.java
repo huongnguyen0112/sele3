@@ -4,10 +4,15 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.NonNull;
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementNotInteractableException;
+import org.openqa.selenium.InvalidElementStateException;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -61,14 +66,42 @@ public class BaseElement {
      *
      * @param action the action to perform on the element
      */
-    @SafeVarargs
-    private void actionWithRetry(Consumer<WebElement> action,
-            Class<? extends RuntimeException>... retryableExceptions) {
+    private void actionWithRetry(Consumer<WebElement> action) {
         withRetry(() -> {
             action.accept(element());
             return null;
         },
-                retryableExceptions);
+                NoSuchElementException.class,
+                StaleElementReferenceException.class,
+                ElementNotInteractableException.class,
+                InvalidElementStateException.class);
+    }
+
+    /**
+     * Gets a String from an element and retries when a retryable exception is
+     * thrown.
+     *
+     * @param getter the operation used to get the String
+     * @return the String returned by the getter
+     */
+    private String getWithRetry(Function<WebElement, String> getter) {
+        return withRetry(() -> getter.apply(element()),
+                NoSuchElementException.class,
+                StaleElementReferenceException.class,
+                InvalidElementStateException.class);
+    }
+
+    /**
+     * Checks an element and retries when a retryable exception is thrown.
+     *
+     * @param checker the operation used to check the element
+     * @return the Boolean result of the check
+     */
+    private Boolean checkWithRetry(Function<WebElement, Boolean> checker) {
+        return withRetry(() -> checker.apply(element()), 
+                NoSuchElementException.class,
+                StaleElementReferenceException.class,
+                ElementNotInteractableException.class);
     }
 
     /**
@@ -183,8 +216,7 @@ public class BaseElement {
                     }, interval);
                 });
                 """;
-        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())),
-                RuntimeException.class);
+        return checkWithRetry(webElement -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, webElement)));
     }
 
     /**
@@ -207,8 +239,7 @@ public class BaseElement {
                 return element.matches(':enabled') && !nativeReadonly
                         && !(ariaReadonly && supportedRoles.has(role));
                 """;
-        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())),
-                RuntimeException.class);
+        return checkWithRetry(webElement -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, webElement)));
     }
 
     /**
@@ -231,8 +262,7 @@ public class BaseElement {
                 const hitTarget = document.elementFromPoint(x, y);
                 return hitTarget === element || element.contains(hitTarget);
                 """;
-        return withRetry(() -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, element())),
-                RuntimeException.class);
+        return checkWithRetry(webElement -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, webElement)));
     }
 
     /**
@@ -241,7 +271,7 @@ public class BaseElement {
      * @return true if the element is visible, otherwise false
      */
     public boolean isDisplayed() {
-        return withRetry(() -> element().isDisplayed(), RuntimeException.class);
+        return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isDisplayed()));
     }
 
     /**
@@ -250,7 +280,7 @@ public class BaseElement {
      * @return true if the element is enabled, otherwise false
      */
     public boolean isEnabled() {
-        return withRetry(() -> element().isEnabled(), RuntimeException.class);
+        return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isEnabled()));
     }
 
     /**
@@ -259,7 +289,7 @@ public class BaseElement {
      * @return true if the element is selected, otherwise false
      */
     public boolean isChecked() {
-        return withRetry(() -> element().isSelected(), RuntimeException.class);
+        return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isSelected()));
     }
 
     /**
@@ -315,7 +345,7 @@ public class BaseElement {
         waitForStable();
         waitForEnabled();
         waitForNotOverlaid();
-        actionWithRetry(WebElement::click, RuntimeException.class);
+        actionWithRetry(WebElement::click);
     }
 
     /**
@@ -331,7 +361,18 @@ public class BaseElement {
                 "const y = rect.top + rect.height / 2;" +
                 "element.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, cancelable: true, clientX: x, clientY: y }));";
 
-        actionWithRetry(element -> Utilities.executeJavaScript(script, element), RuntimeException.class);
+        actionWithRetry(element -> Utilities.executeJavaScript(script, element));
+    }
+
+    /**
+     * Scrolls the element into the center of the viewport.
+     */
+    public void scrollIntoView() {
+        waitForVisible();
+        waitForStable();
+        waitForNotOverlaid();
+        String script = "arguments[0].scrollIntoView({ block: 'center', inline: 'nearest' });";
+        actionWithRetry(element -> Utilities.executeJavaScript(script, element));
     }
 
     /**
@@ -352,7 +393,7 @@ public class BaseElement {
         waitForEnabled();
         waitForNotOverlaid();
         waitForEditable();
-        actionWithRetry(element -> element.clear(), RuntimeException.class);
+        actionWithRetry(element -> element.clear());
     }
 
     /**
@@ -371,7 +412,7 @@ public class BaseElement {
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Failed to send keys to element: " + this.locator, e);
             }
-        }, RuntimeException.class);
+        });
 
     }
 
@@ -408,7 +449,7 @@ public class BaseElement {
      */
     public String getText() {
         waitForVisible();
-        return withRetry(() -> element().getText(), RuntimeException.class);
+        return getWithRetry(webElement -> webElement.getText());
     }
 
     /**
@@ -419,7 +460,6 @@ public class BaseElement {
      */
     public String getAttribute(@NonNull String name) {
         waitForVisible();
-        return withRetry(() -> element().getAttribute(name), RuntimeException.class);
+        return getWithRetry(webElement -> webElement.getAttribute(name));
     }
 }
-
