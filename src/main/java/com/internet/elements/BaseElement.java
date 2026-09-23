@@ -33,6 +33,10 @@ public class BaseElement {
      */
     public BaseElement(By by) {
         this.by = by;
+        this.byClass = by.getClass();
+        String byString = by.toString();
+        int separator = byString.indexOf(": ");
+        this.locator = separator >= 0 ? byString.substring(separator + 2) : byString;
     }
 
     /**
@@ -73,18 +77,21 @@ public class BaseElement {
      * @return the operation result
      */
     private <T> T withStaleRetry(Supplier<T> operation) {
-        int attempts = 0;
-        while (attempts < 3) {
-            try {
-                return operation.get();
-            } catch (StaleElementReferenceException e) {
-                attempts++;
-                if (attempts == 3) {
-                    throw new StaleElementReferenceException("Element is stale", e);
-                }
-            }
+        class Result {
+            private T value;
         }
-        throw new IllegalStateException("Could not complete operation after 3 attempts");
+
+        Result result = new Result();
+        MyWait wait = myWait().configuredWait("Retrying stale element: " + this.locator);
+        wait.waitUntil(ignored -> {
+            try {
+                result.value = operation.get();
+                return true;
+            } catch (StaleElementReferenceException e) {
+                return false;
+            }
+        });
+        return result.value;
     }
 
     /**
@@ -249,7 +256,7 @@ public class BaseElement {
      */
     public void waitForVisible() {
         MyWait wait = myWait().configuredWait("Waiting for element to be visible: " + this.locator);
-        wait.until(ElementConditions.VISIBLE);
+        wait.waitUntil(ElementConditions.VISIBLE);
     }
 
     /**
@@ -258,7 +265,7 @@ public class BaseElement {
      */
     public void waitForEnabled() {
         MyWait wait = myWait().configuredWait("Waiting for element to be enabled: " + this.locator);
-        wait.until(ElementConditions.ENABLED);
+        wait.waitUntil(ElementConditions.ENABLED);
     }
 
     /**
@@ -267,7 +274,7 @@ public class BaseElement {
      */
     public void waitForStable() {
         MyWait wait = myWait().configuredWait("Waiting for element to be stable: " + this.locator);
-        wait.until(ElementConditions.STABLE);
+        wait.waitUntil(ElementConditions.STABLE);
     }
 
     /**
@@ -276,7 +283,7 @@ public class BaseElement {
      */
     public void waitForEditable() {
         MyWait wait = myWait().configuredWait("Waiting for element to be editable: " + this.locator);
-        wait.until(ElementConditions.EDITABLE);
+        wait.waitUntil(ElementConditions.EDITABLE);
     }
 
     /**
@@ -285,7 +292,7 @@ public class BaseElement {
      */
     public void waitForNotOverlaid() {
         MyWait wait = myWait().configuredWait("Waiting for element to be not overlaid: " + this.locator);
-        wait.until(ElementConditions.NOT_OVERLAID);
+        wait.waitUntil(ElementConditions.NOT_OVERLAID);
     }
 
     /**

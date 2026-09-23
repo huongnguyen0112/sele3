@@ -34,11 +34,10 @@ public class MyWait extends FluentWait<WebDriver> {
      *
      * @param condition condition to evaluate until it returns {@code true}
      */
-    public void until(ElementCondition condition) {
+    public void waitUntil(ElementCondition condition) {
         super.until(driver -> condition.matches(element));
     }
     
-    @SuppressWarnings("null")
     public MyWait configuredWait(String message) {
         return (MyWait) super.withTimeout(DEFAULT_TIMEOUT)
                 .pollingEvery(DEFAULT_POLLING_INTERVAL)
