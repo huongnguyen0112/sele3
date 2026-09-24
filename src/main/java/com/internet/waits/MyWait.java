@@ -37,6 +37,23 @@ public class MyWait extends FluentWait<WebDriver> {
     public void waitUntil(ElementCondition condition) {
         super.until(driver -> condition.matches(element));
     }
+
+    /**
+     * Waits until all supplied conditions match the configured element.
+     *
+     * @param conditions conditions to evaluate until they all return {@code true}
+     */
+    public void waitUntil(ElementCondition... conditions) {
+        super.until(driver -> {
+            for (ElementCondition condition : conditions) {
+                if (!condition.matches(element)) {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+    
     
     public MyWait configuredWait(String message) {
         return (MyWait) super.withTimeout(DEFAULT_TIMEOUT)

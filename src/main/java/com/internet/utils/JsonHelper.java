@@ -29,10 +29,22 @@ public class JsonHelper {
             reader = new JsonReader(new FileReader(jsonFile));
         } catch (FileNotFoundException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(jsonFile + "does not exist");
+            throw new RuntimeException(jsonFile + " does not exist");
         }
 
-        JsonDeserializer<Duration> durationDeserializer = (json, type, context) -> {
+        GsonBuilder builder = new GsonBuilder()
+                .registerTypeAdapter(Duration.class, new DurationDeserializer());
+
+        Gson gson = builder.create();
+        return gson.fromJson(reader, clazz);
+    }
+
+    private static class DurationDeserializer implements JsonDeserializer<Duration> {
+        @Override
+        public Duration deserialize(com.google.gson.JsonElement json,
+                                    java.lang.reflect.Type type,
+                                    com.google.gson.JsonDeserializationContext context)
+                throws JsonParseException {
             if (json.isJsonPrimitive() && json.getAsJsonPrimitive().isNumber()) {
                 return Duration.ofMillis(json.getAsLong());
             }
@@ -40,12 +52,6 @@ public class JsonHelper {
                 return Duration.parse(json.getAsString());
             }
             throw new JsonParseException("Duration must be milliseconds or ISO-8601 text");
-        };
-
-        GsonBuilder builder = new GsonBuilder()
-                .registerTypeAdapter(Duration.class, durationDeserializer);
-
-        Gson gson = builder.create();
-        return gson.fromJson(reader, clazz);
+        }
     }
 }

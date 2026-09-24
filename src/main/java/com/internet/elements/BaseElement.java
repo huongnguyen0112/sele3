@@ -15,9 +15,11 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 
 import com.internet.webdriver.DriverProvider;
 import com.internet.utils.Utilities;
+import com.internet.waits.ElementCondition;
 import com.internet.waits.ElementConditions;
 import com.internet.waits.MyWait;
 
@@ -98,7 +100,7 @@ public class BaseElement {
      * @return the Boolean result of the check
      */
     private Boolean checkWithRetry(Function<WebElement, Boolean> checker) {
-        return withRetry(() -> checker.apply(element()), 
+        return withRetry(() -> checker.apply(element()),
                 NoSuchElementException.class,
                 StaleElementReferenceException.class,
                 ElementNotInteractableException.class);
@@ -119,18 +121,10 @@ public class BaseElement {
 
         Result result = new Result();
         MyWait wait = myWait().configuredWait("Retrying operation: " + this.locator);
+        wait.ignoreAll(List.of(retryableExceptions));
         wait.waitUntil(ignored -> {
-            try {
-                result.value = operation.get();
-                return true;
-            } catch (RuntimeException e) {
-                for (Class<? extends RuntimeException> exception : retryableExceptions) {
-                    if (exception.isInstance(e)) {
-                        return false;
-                    }
-                }
-                throw e;
-            }
+            result.value = operation.get();
+            return true;
         });
         return result.value;
     }
@@ -220,29 +214,6 @@ public class BaseElement {
     }
 
     /**
-     * Checks whether the element is enabled and not marked as read-only.
-     *
-     * @return true if the element is editable, otherwise false
-     */
-    public boolean isEditable() {
-        String script = """
-                const element = arguments[0];
-                const nativeReadonly = element.matches('select[readonly], input[readonly], textarea[readonly]');
-                const supportedRoles = new Set([
-                    'checkbox', 'combobox', 'grid', 'gridcell', 'listbox',
-                    'radiogroup', 'slider', 'spinbutton', 'textbox',
-                    'columnheader', 'rowheader', 'searchbox', 'switch', 'treegrid'
-                ]);
-                const role = (element.getAttribute('role') || '').trim().toLowerCase().split(/\\s+/)[0];
-                const ariaReadonly = element.getAttribute('aria-readonly')?.trim().toLowerCase() === 'true';
-
-                return element.matches(':enabled') && !nativeReadonly
-                        && !(ariaReadonly && supportedRoles.has(role));
-                """;
-        return checkWithRetry(webElement -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, webElement)));
-    }
-
-    /**
      * Checks whether the element is not covered by another element at its action
      * point.
      *
@@ -292,6 +263,11 @@ public class BaseElement {
         return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isSelected()));
     }
 
+    public void waitFor(ElementCondition... conditions) {
+        MyWait wait = myWait().configuredWait("Waiting for element to be: " + this.locator);
+        wait.waitUntil(conditions);
+    }
+
     /**
      * Waits until the element becomes visible using the configured timeout and
      * polling interval.
@@ -320,15 +296,6 @@ public class BaseElement {
     }
 
     /**
-     * Waits until the element is enabled and not read-only according to the
-     * configured wait settings.
-     */
-    public void waitForEditable() {
-        MyWait wait = myWait().configuredWait("Waiting for element to be editable: " + this.locator);
-        wait.waitUntil(ElementConditions.EDITABLE);
-    }
-
-    /**
      * Waits until the element is not covered by another element at its action
      * point.
      */
@@ -341,10 +308,12 @@ public class BaseElement {
      * Clicks the element after waiting for it to be actionable.
      */
     public void click() {
-        waitForVisible();
-        waitForStable();
-        waitForEnabled();
-        waitForNotOverlaid();
+        waitFor(
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE,
+                ElementConditions.NOT_OVERLAID);
+
         actionWithRetry(WebElement::click);
     }
 
@@ -352,25 +321,17 @@ public class BaseElement {
      * Hovers over the center of the element and dispatches a mouseover event.
      */
     public void hover() {
-        waitForVisible();
-        waitForStable();
-        waitForNotOverlaid();
-        String script = "const element = arguments[0];" +
-                "const rect = element.getBoundingClientRect();" +
-                "const x = rect.left + rect.width / 2;" +
-                "const y = rect.top + rect.height / 2;" +
-                "element.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, cancelable: true, clientX: x, clientY: y }));";
-
-        actionWithRetry(element -> Utilities.executeJavaScript(script, element));
+        waitFor(
+                ElementConditions.VISIBLE,
+                ElementConditions.STABLE,
+                ElementConditions.NOT_OVERLAID);
+        actionWithRetry(element -> new Actions(webDriver()).moveToElement(element).perform());
     }
 
     /**
      * Scrolls the element into the center of the viewport.
      */
     public void scrollIntoView() {
-        waitForVisible();
-        waitForStable();
-        waitForNotOverlaid();
         String script = "arguments[0].scrollIntoView({ block: 'center', inline: 'nearest' });";
         actionWithRetry(element -> Utilities.executeJavaScript(script, element));
     }
@@ -389,10 +350,10 @@ public class BaseElement {
      * Clears the element after waiting for it to be editable.
      */
     public void clear() {
-        waitForVisible();
-        waitForEnabled();
-        waitForNotOverlaid();
-        waitForEditable();
+        waitFor(
+                ElementConditions.VISIBLE,
+                ElementConditions.STABLE,
+                ElementConditions.NOT_OVERLAID);
         actionWithRetry(element -> element.clear());
     }
 
@@ -402,10 +363,10 @@ public class BaseElement {
      * @param keysToSend the keystrokes to send
      */
     public void sendKeys(CharSequence... keysToSend) {
-        waitForVisible();
-        waitForEnabled();
-        waitForNotOverlaid();
-        waitForEditable();
+        waitFor(
+                ElementConditions.VISIBLE,
+                ElementConditions.STABLE,
+                ElementConditions.NOT_OVERLAID);
         actionWithRetry(element -> {
             try {
                 element.sendKeys(keysToSend);
@@ -420,10 +381,6 @@ public class BaseElement {
      * Checks the element when it is not selected.
      */
     public void check() {
-        waitForVisible();
-        waitForStable();
-        waitForEnabled();
-        waitForNotOverlaid();
         if (!isChecked()) {
             this.click();
         }
@@ -433,10 +390,6 @@ public class BaseElement {
      * Unchecks the element when it is currently selected.
      */
     public void uncheck() {
-        waitForVisible();
-        waitForStable();
-        waitForEnabled();
-        waitForNotOverlaid();
         if (isChecked()) {
             this.click();
         }
@@ -448,7 +401,8 @@ public class BaseElement {
      * @return the element text
      */
     public String getText() {
-        waitForVisible();
+        waitFor(
+                ElementConditions.VISIBLE);
         return getWithRetry(webElement -> webElement.getText());
     }
 
@@ -459,7 +413,8 @@ public class BaseElement {
      * @return the attribute value, or null if the attribute is not present
      */
     public String getAttribute(@NonNull String name) {
-        waitForVisible();
+        waitFor(
+                ElementConditions.VISIBLE);
         return getWithRetry(webElement -> webElement.getAttribute(name));
     }
 }
