@@ -68,15 +68,20 @@ public class BaseElement {
      *
      * @param action the action to perform on the element
      */
-    private void actionWithRetry(Consumer<WebElement> action) {
-        withRetry(() -> {
-            action.accept(element());
-            return null;
-        },
-                NoSuchElementException.class,
-                StaleElementReferenceException.class,
-                ElementNotInteractableException.class,
-                InvalidElementStateException.class);
+    @SuppressWarnings("unchecked")
+    private void actionWithRetry(Consumer<WebElement> action, ElementCondition... conditions) {
+        withRetry(
+                () -> {
+                    action.accept(element());
+                    return null;
+                },
+                new Class[] {
+                        NoSuchElementException.class,
+                        StaleElementReferenceException.class,
+                        ElementNotInteractableException.class,
+                        InvalidElementStateException.class
+                },
+                conditions);
     }
 
     /**
@@ -86,11 +91,18 @@ public class BaseElement {
      * @param getter the operation used to get the String
      * @return the String returned by the getter
      */
-    private String getWithRetry(Function<WebElement, String> getter) {
-        return withRetry(() -> getter.apply(element()),
-                NoSuchElementException.class,
-                StaleElementReferenceException.class,
-                InvalidElementStateException.class);
+    @SuppressWarnings("unchecked")
+    private String getWithRetry(Function<WebElement, String> getter, ElementCondition... conditions) {
+        return withRetry(
+                () -> {
+                    return getter.apply(element());
+                },
+                new Class[] {
+                        NoSuchElementException.class,
+                        StaleElementReferenceException.class,
+                        InvalidElementStateException.class
+                },
+                conditions);
     }
 
     /**
@@ -99,11 +111,16 @@ public class BaseElement {
      * @param checker the operation used to check the element
      * @return the Boolean result of the check
      */
-    private Boolean checkWithRetry(Function<WebElement, Boolean> checker) {
-        return withRetry(() -> checker.apply(element()),
-                NoSuchElementException.class,
-                StaleElementReferenceException.class,
-                ElementNotInteractableException.class);
+    @SuppressWarnings("unchecked")
+    private Boolean checkWithRetry(Function<WebElement, Boolean> checker, ElementCondition... conditions) {
+        return withRetry(
+                () -> checker.apply(element()),
+                new Class[] {
+                        NoSuchElementException.class,
+                        StaleElementReferenceException.class,
+                        ElementNotInteractableException.class
+                },
+                conditions);
     }
 
     /**
@@ -114,7 +131,9 @@ public class BaseElement {
      * @return the operation result
      */
     @SafeVarargs
-    private final <T> T withRetry(Supplier<T> operation, Class<? extends RuntimeException>... retryableExceptions) {
+    private final <T> T withRetry(Supplier<T> operation,
+            Class<? extends RuntimeException>[] retryableExceptions,
+            ElementCondition... conditions) {
         class Result {
             private T value;
         }
@@ -122,10 +141,13 @@ public class BaseElement {
         Result result = new Result();
         MyWait wait = myWait().configuredWait("Retrying operation: " + this.locator);
         wait.ignoreAll(List.of(retryableExceptions));
-        wait.waitUntil(ignored -> {
+        ElementCondition[] retryConditions = new ElementCondition[conditions.length + 1];
+        System.arraycopy(conditions, 0, retryConditions, 0, conditions.length);
+        retryConditions[conditions.length] = ignored -> {
             result.value = operation.get();
             return true;
-        });
+        };
+        wait.waitUntil(retryConditions);
         return result.value;
     }
 
@@ -260,7 +282,11 @@ public class BaseElement {
      * @return true if the element is selected, otherwise false
      */
     public boolean isChecked() {
-        return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isSelected()));
+        return checkWithRetry(
+            webElement -> Boolean.TRUE.equals(webElement.isSelected()),
+            ElementConditions.VISIBLE,
+            ElementConditions.ENABLED
+        );
     }
 
     public void waitFor(ElementCondition... conditions) {
@@ -269,63 +295,26 @@ public class BaseElement {
     }
 
     /**
-     * Waits until the element becomes visible using the configured timeout and
-     * polling interval.
-     */
-    public void waitForVisible() {
-        MyWait wait = myWait().configuredWait("Waiting for element to be visible: " + this.locator);
-        wait.waitUntil(ElementConditions.VISIBLE);
-    }
-
-    /**
-     * Waits until the element becomes enabled using the configured timeout and
-     * polling interval.
-     */
-    public void waitForEnabled() {
-        MyWait wait = myWait().configuredWait("Waiting for element to be enabled: " + this.locator);
-        wait.waitUntil(ElementConditions.ENABLED);
-    }
-
-    /**
-     * Waits until the element is stable across animation frames using the
-     * configured wait settings.
-     */
-    public void waitForStable() {
-        MyWait wait = myWait().configuredWait("Waiting for element to be stable: " + this.locator);
-        wait.waitUntil(ElementConditions.STABLE);
-    }
-
-    /**
-     * Waits until the element is not covered by another element at its action
-     * point.
-     */
-    public void waitForNotOverlaid() {
-        MyWait wait = myWait().configuredWait("Waiting for element to be not overlaid: " + this.locator);
-        wait.waitUntil(ElementConditions.NOT_OVERLAID);
-    }
-
-    /**
      * Clicks the element after waiting for it to be actionable.
      */
     public void click() {
-        waitFor(
-                ElementConditions.VISIBLE,
-                ElementConditions.ENABLED,
-                ElementConditions.STABLE,
+        actionWithRetry(
+                element -> element.click(),
+                    ElementConditions.VISIBLE,
+                    ElementConditions.ENABLED,
+                    ElementConditions.STABLE,
                 ElementConditions.NOT_OVERLAID);
-
-        actionWithRetry(WebElement::click);
     }
 
     /**
      * Hovers over the center of the element and dispatches a mouseover event.
      */
     public void hover() {
-        waitFor(
+        actionWithRetry(
+                element -> new Actions(webDriver()).moveToElement(element).perform(),
                 ElementConditions.VISIBLE,
                 ElementConditions.STABLE,
                 ElementConditions.NOT_OVERLAID);
-        actionWithRetry(element -> new Actions(webDriver()).moveToElement(element).perform());
     }
 
     /**
@@ -350,11 +339,11 @@ public class BaseElement {
      * Clears the element after waiting for it to be editable.
      */
     public void clear() {
-        waitFor(
+        actionWithRetry(
+                element -> element.clear(),
                 ElementConditions.VISIBLE,
                 ElementConditions.STABLE,
                 ElementConditions.NOT_OVERLAID);
-        actionWithRetry(element -> element.clear());
     }
 
     /**
@@ -363,17 +352,17 @@ public class BaseElement {
      * @param keysToSend the keystrokes to send
      */
     public void sendKeys(CharSequence... keysToSend) {
-        waitFor(
+        actionWithRetry(
+                element -> {
+                    try {
+                        element.sendKeys(keysToSend);
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("Failed to send keys to element: " + this.locator, e);
+                    }
+                },
                 ElementConditions.VISIBLE,
                 ElementConditions.STABLE,
                 ElementConditions.NOT_OVERLAID);
-        actionWithRetry(element -> {
-            try {
-                element.sendKeys(keysToSend);
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Failed to send keys to element: " + this.locator, e);
-            }
-        });
 
     }
 
@@ -401,9 +390,9 @@ public class BaseElement {
      * @return the element text
      */
     public String getText() {
-        waitFor(
+        return getWithRetry(
+                webElement -> webElement.getText(),
                 ElementConditions.VISIBLE);
-        return getWithRetry(webElement -> webElement.getText());
     }
 
     /**
@@ -413,8 +402,8 @@ public class BaseElement {
      * @return the attribute value, or null if the attribute is not present
      */
     public String getAttribute(@NonNull String name) {
-        waitFor(
+        return getWithRetry(
+                webElement -> webElement.getAttribute(name),
                 ElementConditions.VISIBLE);
-        return getWithRetry(webElement -> webElement.getAttribute(name));
     }
 }
