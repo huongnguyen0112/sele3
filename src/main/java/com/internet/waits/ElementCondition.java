@@ -1,6 +1,6 @@
 package com.internet.waits;
 
-import com.internet.elements.BaseElement;
+import com.internet.elements.MyElement;
 
 public interface ElementCondition {
     /**
@@ -9,5 +9,5 @@ public interface ElementCondition {
      * @param element the element to check the condition against
      * @return {@code true} if the condition is satisfied, {@code false} otherwise
      */
-    boolean matches(BaseElement element);
+    boolean matches(MyElement element);
 }

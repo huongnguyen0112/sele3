@@ -2,6 +2,7 @@ package com.internet.elements;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -27,7 +28,7 @@ import com.internet.waits.MyWait;
  * Represents a lazily located element and provides state checks, waits, and
  * user interactions for a specific locator.
  */
-public class BaseElement {
+public class MyElement {
     protected By by;
     private Class<?> byClass;
     protected String locator;
@@ -37,7 +38,7 @@ public class BaseElement {
      *
      * @param by the locator used to find this element
      */
-    public BaseElement(By by) {
+    public MyElement(By by) {
         this.by = by;
         this.byClass = by.getClass();
         String byString = by.toString();
@@ -81,6 +82,7 @@ public class BaseElement {
                         ElementNotInteractableException.class,
                         InvalidElementStateException.class
                 },
+                null,
                 conditions);
     }
 
@@ -102,6 +104,7 @@ public class BaseElement {
                         StaleElementReferenceException.class,
                         InvalidElementStateException.class
                 },
+                null,
                 conditions);
     }
 
@@ -112,7 +115,8 @@ public class BaseElement {
      * @return the Boolean result of the check
      */
     @SuppressWarnings("unchecked")
-    private Boolean checkWithRetry(Function<WebElement, Boolean> checker, ElementCondition... conditions) {
+        private Boolean checkWithRetry(Function<WebElement, Boolean> checker, Duration duration,
+            ElementCondition... conditions) {
         return withRetry(
                 () -> checker.apply(element()),
                 new Class[] {
@@ -120,6 +124,7 @@ public class BaseElement {
                         StaleElementReferenceException.class,
                         ElementNotInteractableException.class
                 },
+                duration,
                 conditions);
     }
 
@@ -133,13 +138,14 @@ public class BaseElement {
     @SafeVarargs
     private final <T> T withRetry(Supplier<T> operation,
             Class<? extends RuntimeException>[] retryableExceptions,
+            Duration duration,
             ElementCondition... conditions) {
         class Result {
             private T value;
         }
 
         Result result = new Result();
-        MyWait wait = myWait().configuredWait("Retrying operation: " + this.locator);
+        MyWait wait = myWait().configuredWait("Retrying operation: " + this.locator, duration);
         wait.ignoreAll(List.of(retryableExceptions));
         ElementCondition[] retryConditions = new ElementCondition[conditions.length + 1];
         System.arraycopy(conditions, 0, retryConditions, 0, conditions.length);
@@ -149,26 +155,6 @@ public class BaseElement {
         };
         wait.waitUntil(retryConditions);
         return result.value;
-    }
-
-    /**
-     * Formats the stored locator with the provided arguments and rebuilds the
-     * underlying By instance.
-     *
-     * @param args values used to format the locator string
-     * @return this element instance for chaining
-     */
-    public BaseElement set(Object... args) {
-        this.locator = String.format(this.locator, args);
-        try {
-            Constructor<?> constructor = this.byClass.getConstructor(String.class);
-            this.by = (By) constructor.newInstance(this.locator);
-        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
-                | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        return this;
     }
 
     /**
@@ -196,6 +182,10 @@ public class BaseElement {
      * @return true if the element is stable, otherwise false
      */
     public boolean isStable() {
+        return isStable(Duration.ZERO);
+    }
+
+    public boolean isStable(Duration duration) {
         String script = """
                 const element = arguments[0];
                 const interval = 16;
@@ -232,7 +222,8 @@ public class BaseElement {
                     }, interval);
                 });
                 """;
-        return checkWithRetry(webElement -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, webElement)));
+        return checkWithRetry(webElement -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, webElement)),
+            duration);
     }
 
     /**
@@ -243,6 +234,10 @@ public class BaseElement {
      *         false
      */
     public boolean isNotOverlaid() {
+        return isNotOverlaid(Duration.ZERO);
+    }
+
+    public boolean isNotOverlaid(Duration duration) {
         String script = """
                 const element = arguments[0];
                 const rect = element.getBoundingClientRect();
@@ -255,7 +250,8 @@ public class BaseElement {
                 const hitTarget = document.elementFromPoint(x, y);
                 return hitTarget === element || element.contains(hitTarget);
                 """;
-        return checkWithRetry(webElement -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, webElement)));
+        return checkWithRetry(webElement -> Boolean.TRUE.equals(Utilities.executeJavaScript(script, webElement)),
+            duration);
     }
 
     /**
@@ -264,7 +260,11 @@ public class BaseElement {
      * @return true if the element is visible, otherwise false
      */
     public boolean isDisplayed() {
-        return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isDisplayed()));
+        return isDisplayed(Duration.ZERO);
+    }
+
+    public boolean isDisplayed(Duration duration) {
+        return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isDisplayed()), duration);
     }
 
     /**
@@ -273,7 +273,11 @@ public class BaseElement {
      * @return true if the element is enabled, otherwise false
      */
     public boolean isEnabled() {
-        return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isEnabled()));
+        return isEnabled(Duration.ZERO);
+    }
+
+    public boolean isEnabled(Duration duration) {
+        return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isEnabled()), duration);
     }
 
     /**
@@ -282,15 +286,24 @@ public class BaseElement {
      * @return true if the element is selected, otherwise false
      */
     public boolean isChecked() {
+        return isChecked(Duration.ZERO);
+    }
+
+    public boolean isChecked(Duration duration) {
         return checkWithRetry(
             webElement -> Boolean.TRUE.equals(webElement.isSelected()),
+            duration,
             ElementConditions.VISIBLE,
             ElementConditions.ENABLED
         );
     }
 
     public void waitFor(ElementCondition... conditions) {
-        MyWait wait = myWait().configuredWait("Waiting for element to be: " + this.locator);
+        waitFor(null, conditions);
+    }
+
+    public void waitFor(Duration duration, ElementCondition... conditions) {
+        MyWait wait = myWait().configuredWait("Waiting for element to be: " + this.locator, duration);
         wait.waitUntil(conditions);
     }
 
@@ -302,8 +315,7 @@ public class BaseElement {
                 element -> element.click(),
                     ElementConditions.VISIBLE,
                     ElementConditions.ENABLED,
-                    ElementConditions.STABLE,
-                ElementConditions.NOT_OVERLAID);
+                    ElementConditions.STABLE);
     }
 
     /**
@@ -313,14 +325,13 @@ public class BaseElement {
         actionWithRetry(
                 element -> new Actions(webDriver()).moveToElement(element).perform(),
                 ElementConditions.VISIBLE,
-                ElementConditions.STABLE,
-                ElementConditions.NOT_OVERLAID);
+                ElementConditions.STABLE);
     }
 
     /**
      * Scrolls the element into the center of the viewport.
      */
-    public void scrollIntoView() {
+   public void scrollIntoView() {
         String script = "arguments[0].scrollIntoView({ block: 'center', inline: 'nearest' });";
         actionWithRetry(element -> Utilities.executeJavaScript(script, element));
     }
@@ -330,6 +341,7 @@ public class BaseElement {
      *
      * @param text the text to type into the field
      */
+
     public void fill(String text) {
         this.clear();
         this.sendKeys(text);
@@ -342,8 +354,7 @@ public class BaseElement {
         actionWithRetry(
                 element -> element.clear(),
                 ElementConditions.VISIBLE,
-                ElementConditions.STABLE,
-                ElementConditions.NOT_OVERLAID);
+                ElementConditions.STABLE);
     }
 
     /**
@@ -353,16 +364,9 @@ public class BaseElement {
      */
     public void sendKeys(CharSequence... keysToSend) {
         actionWithRetry(
-                element -> {
-                    try {
-                        element.sendKeys(keysToSend);
-                    } catch (IllegalArgumentException e) {
-                        throw new IllegalArgumentException("Failed to send keys to element: " + this.locator, e);
-                    }
-                },
+                element -> element.sendKeys(keysToSend),
                 ElementConditions.VISIBLE,
-                ElementConditions.STABLE,
-                ElementConditions.NOT_OVERLAID);
+                ElementConditions.STABLE);
 
     }
 
