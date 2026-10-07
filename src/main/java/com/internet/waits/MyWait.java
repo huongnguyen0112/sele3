@@ -27,8 +27,9 @@ public class MyWait extends FluentWait<WebDriver> {
     public MyWait(MyElement element) {
         super(DriverProvider.getWebDriver());
         this.element = element;
-        this.timeout = Configurations.init().getTimeout();
-        this.pollingInterval = Configurations.init().getPollingInterval();
+        Configurations configurations = Configurations.init();
+        this.timeout = configurations.getTimeout();
+        this.pollingInterval = configurations.getPollingInterval();
         super.withTimeout(timeout).pollingEvery(pollingInterval);
     }
 

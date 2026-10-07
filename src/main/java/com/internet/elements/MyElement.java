@@ -343,8 +343,13 @@ public class MyElement {
      */
 
     public void fill(String text) {
-        this.clear();
-        this.sendKeys(text);
+        actionWithRetry(
+                element -> {
+                    element.clear();
+                    element.sendKeys(text);
+                },
+                ElementConditions.VISIBLE,
+                ElementConditions.STABLE);
     }
 
     /**
