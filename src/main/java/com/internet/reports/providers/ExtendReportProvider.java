@@ -47,6 +47,14 @@ public class ExtendReportProvider implements AbstractReportProvider {
 
             extent = new ExtentReports();
             extent.attachReporter(spark);
+
+            // REGISTER THE AUTOMATIC SHUTDOWN FLUSH HOOK HERE
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                if (extent != null) {
+                    log.info("[Shutdown Hook] JVM terminating. Auto-flushing Extent Report...");
+                    extent.flush();
+                }
+            }));
         }
     }
 
@@ -80,7 +88,8 @@ public class ExtendReportProvider implements AbstractReportProvider {
     public void onTestFinish(String testName) {
         ExtentTest currentTest = getTest();
         if (currentTest != null) {
-            currentTest.log(Status.INFO, "Finishing test: " + testName);
+            Status status = currentTest.getStatus();
+            currentTest.log(status != null ? status : Status.INFO, "Finishing test: " + testName);
             test.remove();
         }
     }
