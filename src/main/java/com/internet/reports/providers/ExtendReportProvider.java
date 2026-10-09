@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.UUID;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 
@@ -16,7 +17,7 @@ import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.internet.webdriver.DriverProvider;
 
-public class ExtendReportProvider extends AbstractReportProvider {
+public class ExtendReportProvider implements AbstractReportProvider {
 
     private static ExtentReports extent;
     private static ThreadLocal<ExtentTest> test = new ThreadLocal<>();
@@ -116,8 +117,8 @@ public class ExtendReportProvider extends AbstractReportProvider {
         if (getTest() != null) {
 
             // Example: ExtentReports/Images/My_Test_Step_123456.png
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
-            String fileName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_") + "_" + timestamp + ".png";
+            String uniqueId = UUID.randomUUID().toString();
+            String fileName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_") + "_" + uniqueId + ".png";
             String fullImageDir = REPORT_FOLDER_PATH + File.separator + SCREENSHOT_SUB_DIR;
             String fullImagePath = fullImageDir + File.separator + fileName;
 
@@ -130,7 +131,7 @@ public class ExtendReportProvider extends AbstractReportProvider {
                 String relativePath = SCREENSHOT_SUB_DIR + "/" + fileName;
                 getTest().addScreenCaptureFromPath(relativePath, name);
             } catch (IOException | NullPointerException e) {
-                getTest().fail("Failed to capture screenshot: " + e.getMessage());
+                getTest().warning("Failed to capture screenshot: " + e.getMessage());
             }
         }
     }

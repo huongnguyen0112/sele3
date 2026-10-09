@@ -8,12 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j 
 public class ReportProvider {
-    private static final String reportType = Configurations.init().getReports();
     private static final ThreadLocal<AbstractReportProvider> REPORT_THREAD = new ThreadLocal<>();
 
     static AbstractReportProvider newInstance() {
         try {
-            AbstractReportProvider abstractReportProvider = new ReportLoader().loadReportProviders(reportType);
+            AbstractReportProvider abstractReportProvider = new ReportLoader().loadReportProviders(Configurations.init().getReports());
             REPORT_THREAD.set(abstractReportProvider);  
             return abstractReportProvider;
         } catch (Exception e) {
