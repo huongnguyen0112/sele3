@@ -17,6 +17,9 @@ import com.aventstack.extentreports.Status;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.internet.webdriver.DriverProvider;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j 
 public class ExtendReportProvider implements AbstractReportProvider {
 
     private static ExtentReports extent;
@@ -131,7 +134,7 @@ public class ExtendReportProvider implements AbstractReportProvider {
                 String relativePath = SCREENSHOT_SUB_DIR + "/" + fileName;
                 getTest().addScreenCaptureFromPath(relativePath, name);
             } catch (IOException | NullPointerException e) {
-                getTest().warning("Failed to capture screenshot: " + e.getMessage());
+                log.error("Failed to capture screenshot: {}", e.getMessage());
             }
         }
     }
