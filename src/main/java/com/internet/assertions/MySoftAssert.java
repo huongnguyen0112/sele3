@@ -2,6 +2,7 @@ package com.internet.assertions;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -17,7 +18,7 @@ public final class MySoftAssert {
     private static final ThreadLocal<List<MySoftAssert>> PENDING_ASSERTIONS =
             ThreadLocal.withInitial(ArrayList::new);
 
-    private final List<AssertionError> failures = new ArrayList<>();
+    private final List<AssertionError> failures = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Creates a soft assertion collector and registers it for automatic
@@ -90,20 +91,21 @@ public final class MySoftAssert {
 
     /**
      * Throws one error containing all failures collected by this instance.
-     * Call this after completing the soft assertions in a test; instances that
-     * are asserted here are excluded from automatic test-finish verification.
+     * Call this after completing the soft assertions in a test; failures
+     * reported here are cleared and will not be reported again automatically.
      *
      * @throws AssertionError if one or more assertions failed
      * <p>Example: {@code softly.assertAll();}</p>
      */
     public void assertAll() {
-        removeFromPendingAssertions();
-        if (failures.isEmpty()) {
-            return;
+        List<AssertionError> collectedFailures;
+        synchronized (failures) {
+            if (failures.isEmpty()) {
+                return;
+            }
+            collectedFailures = new ArrayList<>(failures);
+            failures.clear();
         }
-
-        List<AssertionError> collectedFailures = new ArrayList<>(failures);
-        failures.clear();
         AssertionError aggregate = new AssertionError(
                 "The following " + collectedFailures.size() + " soft assertion(s) failed.");
         aggregate.initCause(collectedFailures.get(0));
@@ -114,12 +116,12 @@ public final class MySoftAssert {
     }
 
     /**
-     * Throws failures from every registered soft assertion instance on the
-     * current thread, then clears the thread's registrations. The test lifecycle
-     * calls this after each test method; most tests do not need to call it directly.
+     * Verifies all soft assertion instances registered on the current thread.
+     *
+     * <p>Test lifecycle listeners can call this after a test method so tests do
+     * not need to invoke {@link #assertAll()} explicitly.</p>
      *
      * @throws AssertionError if any registered instance contains failures
-     * <p>Example: {@code MySoftAssert.assertAllPending();}</p>
      */
     public static void assertAllPending() {
         List<MySoftAssert> pending = new ArrayList<>(PENDING_ASSERTIONS.get());
@@ -142,17 +144,6 @@ public final class MySoftAssert {
                 aggregate.addSuppressed(collectedFailures.get(i));
             }
             throw aggregate;
-        }
-    }
-
-    /**
-     * Removes this collector from the current thread's automatic verification list.
-     */
-    private void removeFromPendingAssertions() {
-        List<MySoftAssert> pending = PENDING_ASSERTIONS.get();
-        pending.remove(this);
-        if (pending.isEmpty()) {
-            PENDING_ASSERTIONS.remove();
         }
     }
 
@@ -455,5 +446,9 @@ public final class MySoftAssert {
         } catch (AssertionError failure) {
             failures.add(failure);
         }
+    }
+
+    public static MySoftAssert getInstance() {
+        return PENDING_ASSERTIONS.get().isEmpty() ? new MySoftAssert() : PENDING_ASSERTIONS.get().get(PENDING_ASSERTIONS.get().size() - 1);
     }
 }

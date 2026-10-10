@@ -2,20 +2,20 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="Test Suite" thread-count="2" parallel="tests">
     <listeners>
-        <listener class-name="com.internet.util.listeners.TestListener"/>
+        <listener class-name="com.internet.assertions.AssertListener"/>
     </listeners>
 
     <test name="EdgeTest">
         <parameter name="config" value="edge.json" />
         <classes>
-            <class name="com.internet.tests.search.SearchTests"/>
+            <class name="com.internet.tests.SearchTests"/>
         </classes>
     </test>
 
     <test name="ChromeTest">
         <parameter name="config" value="chrome.json" />
         <classes>
-            <class name="com.internet.tests.search.SearchTests"/>
+            <class name="com.internet.tests.SearchTests"/>
         </classes>
     </test>
 </suite>

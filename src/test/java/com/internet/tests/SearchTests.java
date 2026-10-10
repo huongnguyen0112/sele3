@@ -47,8 +47,5 @@ public class SearchTests extends BaseTest {
         ReportProvider.step("3. Step 3: Submit search");    
         homepage.submitSearch();
         ReportProvider.screenshot("Search submitted");
-
-        softAssert.assertAll();
     }
-    
 }

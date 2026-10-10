@@ -1,15 +1,18 @@
 package com.internet.assertions;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 
+import org.openqa.selenium.ElementNotInteractableException;
+import org.openqa.selenium.InvalidElementStateException;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 
 import com.internet.elements.MyElement;
 import com.internet.reports.ReportProvider;
 import com.internet.waits.ElementCondition;
-import com.internet.waits.ElementConditions;
 import com.internet.waits.MyWait;
 
 /**
@@ -20,6 +23,15 @@ public final class MyHardAssert {
      * Prevents instances of this utility class.
      */
     private MyHardAssert() {
+    }
+
+    private static void captureScreenshot(String message) {
+        try {
+            ReportProvider.screenshot(message);
+        } catch (RuntimeException ignored) {
+            // A screenshot failure must not prevent the assertion failure from being
+            // recorded.
+        }
     }
 
     /**
@@ -93,7 +105,8 @@ public final class MyHardAssert {
                 ? new AssertionError(message)
                 : new AssertionError(message, cause);
         try {
-            ReportProvider.fail(message);
+            ReportProvider.fail(message + "\n" + (cause == null ? "" : " Cause: " + cause.getMessage()));
+            captureScreenshot(message);
         } catch (RuntimeException reportingFailure) {
             failure.addSuppressed(reportingFailure);
         }
@@ -236,7 +249,6 @@ public final class MyHardAssert {
          */
         public StringAssert isNotEqualTo(String expected) {
             if (Objects.equals(actual, expected)) {
-                ReportProvider.screenshot("Expected \"" + actual + "\" not to be equal to \"" + expected + "\".");
                 throw failure("Expected \"" + actual + "\" not to be equal to \"" + expected + "\".", null);
             }
             return this;
@@ -254,7 +266,6 @@ public final class MyHardAssert {
         public StringAssert contains(String expected) {
             Objects.requireNonNull(expected, "expected must not be null");
             if (actual == null || !actual.contains(expected)) {
-                ReportProvider.screenshot("Expected \"" + actual + "\" to contain \"" + expected + "\".");
                 throw failure("Expected \"" + actual + "\" to contain \"" + expected + "\".", null);
             }
             return this;
@@ -269,7 +280,6 @@ public final class MyHardAssert {
          */
         public StringAssert isEmpty() {
             if (actual == null || !actual.isEmpty()) {
-                ReportProvider.screenshot("Expected \"" + actual + "\" to be empty.");
                 throw failure("Expected \"" + actual + "\" to be empty.", null);
             }
             return this;
@@ -302,7 +312,6 @@ public final class MyHardAssert {
          */
         public BooleanAssert isTrue() {
             if (!actual) {
-                ReportProvider.screenshot("Expected value to be true, but it was false.");
                 throw failure("Expected value to be true, but it was false.", null);
             }
             return this;
@@ -317,7 +326,6 @@ public final class MyHardAssert {
          */
         public BooleanAssert isFalse() {
             if (actual) {
-                ReportProvider.screenshot("Expected value to be false, but it was true.");
                 throw failure("Expected value to be false, but it was true.", null);
             }
             return this;
@@ -333,7 +341,6 @@ public final class MyHardAssert {
          */
         public BooleanAssert isEqualTo(boolean expected) {
             if (actual != expected) {
-                ReportProvider.screenshot("Expected " + actual + " to be equal to " + expected + ".");
                 throw failure("Expected " + actual + " to be equal to " + expected + ".", null);
             }
             return this;
@@ -368,7 +375,7 @@ public final class MyHardAssert {
          * <p>Example: {@code MyHardAssert.assertThat(searchBox).isDisplayed();}</p>
          */
         public ElementAssert isDisplayed() {
-            return satisfies("to become visible", ElementConditions.VISIBLE);
+            return satisfies("to become visible", candidate -> candidate.isDisplayed(timeout));
         }
 
         /**
@@ -379,7 +386,7 @@ public final class MyHardAssert {
          * <p>Example: {@code MyHardAssert.assertThat(submitButton).isEnabled();}</p>
          */
         public ElementAssert isEnabled() {
-            return satisfies("to become enabled", ElementConditions.ENABLED);
+            return satisfies("to become enabled", candidate -> candidate.isEnabled(timeout));
         }
 
         /**
@@ -390,7 +397,7 @@ public final class MyHardAssert {
          * <p>Example: {@code MyHardAssert.assertThat(termsCheckbox).isChecked();}</p>
          */
         public ElementAssert isChecked() {
-            return satisfies("to become checked", MyElement::isChecked);
+            return satisfies("to become checked", candidate -> candidate.isChecked(timeout));
         }
 
         /**
@@ -434,18 +441,23 @@ public final class MyHardAssert {
          *         unmet expectation and effective timeout duration
          * <p>Example: {@code MyHardAssert.assertThat(searchBox).satisfies("to contain query", element -> "Selenium".equals(element.element().getAttribute("value")));}</p>
          */
+        @SuppressWarnings("null")
         public ElementAssert satisfies(String expectation, ElementCondition condition) {
             Objects.requireNonNull(expectation, "expectation must not be null");
             Objects.requireNonNull(condition, "condition must not be null");
 
             MyWait wait = new MyWait(element).configuredWait("Waiting for assertion: " + expectation, timeout);
             try {
-                wait.ignoring(StaleElementReferenceException.class);
+                wait.ignoreAll(List.of(
+                        NoSuchElementException.class,
+                        StaleElementReferenceException.class,
+                        ElementNotInteractableException.class,
+                        InvalidElementStateException.class
+                ));
                 wait.waitUntil(condition);
             } catch (TimeoutException e) {
-                ReportProvider.screenshot("Timed out waiting for the element (find by: " + element.byClassString() + "; locator: '" + element.locatorString() + "') " + expectation + " within "
-                        + formatDuration(wait.getConfiguredTimeout()) + ".");
-                throw failure("Timed out waiting for the element (find by: " + element.byClassString() + "; locator: '" + element.locatorString() + "') " + expectation + " within "
+                throw failure("Timed out waiting for the element (find by: " + element.byClassString() + "; locator: '"
+                        + element.locatorString() + "') " + expectation + " within "
                         + formatDuration(wait.getConfiguredTimeout()) + ".", e);
             }
             return this;
