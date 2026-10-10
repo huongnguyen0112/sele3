@@ -220,6 +220,7 @@ public final class MyHardAssert {
          */
         public StringAssert isEqualTo(String expected) {
             if (!Objects.equals(actual, expected)) {
+                ReportProvider.screenshot("Expected \"" + actual + "\" to be equal to \"" + expected + "\".");
                 throw failure("Expected \"" + actual + "\" to be equal to \"" + expected + "\".", null);
             }
             return this;
@@ -235,6 +236,7 @@ public final class MyHardAssert {
          */
         public StringAssert isNotEqualTo(String expected) {
             if (Objects.equals(actual, expected)) {
+                ReportProvider.screenshot("Expected \"" + actual + "\" not to be equal to \"" + expected + "\".");
                 throw failure("Expected \"" + actual + "\" not to be equal to \"" + expected + "\".", null);
             }
             return this;
@@ -252,6 +254,7 @@ public final class MyHardAssert {
         public StringAssert contains(String expected) {
             Objects.requireNonNull(expected, "expected must not be null");
             if (actual == null || !actual.contains(expected)) {
+                ReportProvider.screenshot("Expected \"" + actual + "\" to contain \"" + expected + "\".");
                 throw failure("Expected \"" + actual + "\" to contain \"" + expected + "\".", null);
             }
             return this;
@@ -266,6 +269,7 @@ public final class MyHardAssert {
          */
         public StringAssert isEmpty() {
             if (actual == null || !actual.isEmpty()) {
+                ReportProvider.screenshot("Expected \"" + actual + "\" to be empty.");
                 throw failure("Expected \"" + actual + "\" to be empty.", null);
             }
             return this;
@@ -298,6 +302,7 @@ public final class MyHardAssert {
          */
         public BooleanAssert isTrue() {
             if (!actual) {
+                ReportProvider.screenshot("Expected value to be true, but it was false.");
                 throw failure("Expected value to be true, but it was false.", null);
             }
             return this;
@@ -312,6 +317,7 @@ public final class MyHardAssert {
          */
         public BooleanAssert isFalse() {
             if (actual) {
+                ReportProvider.screenshot("Expected value to be false, but it was true.");
                 throw failure("Expected value to be false, but it was true.", null);
             }
             return this;
@@ -327,6 +333,7 @@ public final class MyHardAssert {
          */
         public BooleanAssert isEqualTo(boolean expected) {
             if (actual != expected) {
+                ReportProvider.screenshot("Expected " + actual + " to be equal to " + expected + ".");
                 throw failure("Expected " + actual + " to be equal to " + expected + ".", null);
             }
             return this;
@@ -436,6 +443,8 @@ public final class MyHardAssert {
                 wait.ignoring(StaleElementReferenceException.class);
                 wait.waitUntil(condition);
             } catch (TimeoutException e) {
+                ReportProvider.screenshot("Timed out waiting for the element (find by: " + element.byClassString() + "; locator: '" + element.locatorString() + "') " + expectation + " within "
+                        + formatDuration(wait.getConfiguredTimeout()) + ".");
                 throw failure("Timed out waiting for the element (find by: " + element.byClassString() + "; locator: '" + element.locatorString() + "') " + expectation + " within "
                         + formatDuration(wait.getConfiguredTimeout()) + ".", e);
             }
