@@ -1,6 +1,5 @@
 package com.internet.tests;
 
-import com.internet.configuration.Constants;
 import com.internet.reports.ReportProvider;
 import com.internet.webdriver.DriverConfig;
 import com.internet.webdriver.DriverProvider;
@@ -27,7 +26,6 @@ public class BaseTest {
         DriverConfig driverConfig = DriverConfig.loadFromFile(configFile);
         DriverProvider.startWebDriver(driverConfig);
         DriverProvider.getWebDriver().manage().window().maximize();
-        DriverProvider.getWebDriver().navigate().to(Constants.BASE_URL);
     }
 
     /**
@@ -37,6 +35,5 @@ public class BaseTest {
     public void afterMethod() {
         DriverProvider.getWebDriver().quit();
         ReportProvider.finish("zzz");
-        ReportProvider.flush();
     }
 }
