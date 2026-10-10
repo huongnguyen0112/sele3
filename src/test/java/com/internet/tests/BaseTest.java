@@ -1,6 +1,7 @@
 package com.internet.tests;
 
 import com.internet.configuration.Constants;
+import com.internet.reports.ReportProvider;
 import com.internet.webdriver.DriverConfig;
 import com.internet.webdriver.DriverProvider;
 import org.testng.annotations.*;
@@ -22,6 +23,7 @@ public class BaseTest {
      */
     @BeforeMethod
     public void startTest() {
+        ReportProvider.start("zzz");
         DriverConfig driverConfig = DriverConfig.loadFromFile(configFile);
         DriverProvider.startWebDriver(driverConfig);
         DriverProvider.getWebDriver().manage().window().maximize();
@@ -34,5 +36,7 @@ public class BaseTest {
     @AfterMethod
     public void afterMethod() {
         DriverProvider.getWebDriver().quit();
+        ReportProvider.finish("zzz");
+        ReportProvider.flush();
     }
 }
