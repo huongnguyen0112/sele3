@@ -20,7 +20,7 @@ import com.internet.webdriver.DriverProvider;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j 
-public class ExtendReportProvider implements AbstractReportProvider {
+public class ExtentReportProvider implements ReportProviderInterface {
 
     private static ExtentReports extent;
     private static ThreadLocal<ExtentTest> test = new ThreadLocal<>();
@@ -30,7 +30,7 @@ public class ExtendReportProvider implements AbstractReportProvider {
     /**
      * Initializes the shared ExtentReports instance and configures its output file.
      */
-    public ExtendReportProvider() {
+    public ExtentReportProvider() {
         if (extent == null) {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
             String fileName = "Report_" + timestamp + ".html";

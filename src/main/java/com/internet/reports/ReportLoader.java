@@ -4,10 +4,10 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.internet.reports.providers.AbstractReportProvider;
+import com.internet.reports.providers.ReportProviderInterface;
 
 public class ReportLoader {
-    private static final ConcurrentMap<String, AbstractReportProvider> PROVIDERS = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, ReportProviderInterface> PROVIDERS = new ConcurrentHashMap<>();
 
     /**
      * Loads the provider for the requested report name, reusing an already loaded provider when available.
@@ -16,7 +16,7 @@ public class ReportLoader {
      * @return the provider registered for the report
      * @throws IllegalArgumentException if the report name is blank or no unique provider is available
      */
-    public AbstractReportProvider loadReportProviders(String reportName) {
+    public ReportProviderInterface loadReportProviders(String reportName) {
         if (reportName == null || reportName.isBlank()) {
                 throw new IllegalArgumentException("Report name must not be blank");
         }
@@ -34,9 +34,9 @@ public class ReportLoader {
      * @return the matching report provider
      * @throws IllegalArgumentException if multiple providers match or no provider matches
      */
-    private AbstractReportProvider loadProvider(String requestedReport, String reportName) {
+    private ReportProviderInterface loadProvider(String requestedReport, String reportName) {
         var matches = ServiceLoader
-                .load(AbstractReportProvider.class)
+                .load(ReportProviderInterface.class)
                 .stream()
                 .filter(provider -> provider.type().getSimpleName()
                         .replaceFirst("ReportProvider$", "")

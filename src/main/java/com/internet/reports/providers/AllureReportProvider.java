@@ -9,7 +9,7 @@ import com.internet.webdriver.DriverProvider;
 
 import io.qameta.allure.Allure;
 
-public class AllureReportProvider implements AbstractReportProvider {
+public class AllureReportProvider implements ReportProviderInterface {
     /**
      * Adds a message as an Allure step.
      *

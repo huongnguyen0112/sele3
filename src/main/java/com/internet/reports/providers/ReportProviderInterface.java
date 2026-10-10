@@ -1,6 +1,6 @@
 package com.internet.reports.providers;
 
-public interface AbstractReportProvider {
+public interface ReportProviderInterface {
     /**
      * Writes a message to the report.
      *

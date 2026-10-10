@@ -2,17 +2,17 @@ package com.internet.reports;
 
 import com.google.common.base.Throwables;
 import com.internet.configurations.Configurations;
-import com.internet.reports.providers.AbstractReportProvider;
+import com.internet.reports.providers.ReportProviderInterface;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j 
 public class ReportProvider {
-    private static final ThreadLocal<AbstractReportProvider> REPORT_THREAD = new ThreadLocal<>();
+    private static final ThreadLocal<ReportProviderInterface> REPORT_THREAD = new ThreadLocal<>();
 
-    static AbstractReportProvider newInstance() {
+    static ReportProviderInterface newInstance() {
         try {
-            AbstractReportProvider abstractReportProvider = new ReportLoader().loadReportProviders(Configurations.init().getReports());
+            ReportProviderInterface abstractReportProvider = new ReportLoader().loadReportProviders(Configurations.init().getReports());
             REPORT_THREAD.set(abstractReportProvider);  
             return abstractReportProvider;
         } catch (Exception e) {
@@ -20,8 +20,8 @@ public class ReportProvider {
         }
     }
 
-    static AbstractReportProvider getInstance() {
-        AbstractReportProvider instance = REPORT_THREAD.get();
+    static ReportProviderInterface getInstance() {
+        ReportProviderInterface instance = REPORT_THREAD.get();
         if (instance == null) {
             instance = newInstance();
             REPORT_THREAD.set(instance);
