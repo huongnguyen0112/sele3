@@ -34,6 +34,11 @@ public class ReportProvider {
         getInstance().log(msg);
     }
 
+    public static void fail(String msg) {
+        log.error("[ASSERTION FAILED] " + msg);
+        getInstance().fail(msg);
+    }
+
     public static void step(String msg) {
         log.info("[STEP] " + msg);
         getInstance().step(msg);
