@@ -45,6 +45,24 @@ public class MyElement {
     }
 
     /**
+     * Returns the Selenium locator string used to find this element.
+     *
+     * @return the locator
+     */
+    public String locatorString() {
+        return locator;
+    }
+
+    /**
+     * Returns the Selenium byClass string used to find this element.
+     *
+     * @return the byClass
+     */
+    public String byClassString() {
+        return byClass.getSimpleName();
+    }
+
+    /**
      * Returns the WebDriver associated with the current thread.
      *
      * @return the current driver instance

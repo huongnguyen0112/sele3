@@ -436,7 +436,7 @@ public final class MyHardAssert {
                 wait.ignoring(StaleElementReferenceException.class);
                 wait.waitUntil(condition);
             } catch (TimeoutException e) {
-                throw failure("Timed out waiting for the element " + expectation + " within "
+                throw failure("Timed out waiting for the element (find by: " + element.byClassString() + "; locator: '" + element.locatorString() + "') " + expectation + " within "
                         + formatDuration(wait.getConfiguredTimeout()) + ".", e);
             }
             return this;
