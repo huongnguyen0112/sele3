@@ -106,6 +106,13 @@ public class ExtentReportProvider implements ReportProviderInterface {
         }
     }
 
+    @Override
+    public void fail(String message) {
+        if (getTest() != null) {
+            getTest().fail(message);
+        }
+    }
+
     /**
      * Adds a test step to the current Extent test.
      *

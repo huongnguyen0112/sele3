@@ -17,6 +17,7 @@ public class MyWait extends FluentWait<WebDriver> {
 
     private final MyElement element;
     private final Duration timeout;
+    private Duration configuredTimeout;
     private final Duration pollingInterval;
 
     /**
@@ -29,6 +30,7 @@ public class MyWait extends FluentWait<WebDriver> {
         this.element = element;
         Configurations configurations = Configurations.init();
         this.timeout = configurations.getTimeout();
+        this.configuredTimeout = this.timeout;
         this.pollingInterval = configurations.getPollingInterval();
         super.withTimeout(timeout).pollingEvery(pollingInterval);
     }
@@ -64,9 +66,19 @@ public class MyWait extends FluentWait<WebDriver> {
     }
 
     public MyWait configuredWait(String message, Duration duration) {
-        super.withTimeout(duration == null ? timeout : duration)
+        configuredTimeout = duration == null ? timeout : duration;
+        super.withTimeout(configuredTimeout)
                 .pollingEvery(pollingInterval)
                 .withMessage(message);
         return this;
+    }
+
+    /**
+     * Returns the timeout currently applied to this wait.
+     *
+     * @return the effective timeout duration
+     */
+    public Duration getConfiguredTimeout() {
+        return configuredTimeout;
     }
 }

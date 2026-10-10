@@ -1,7 +1,5 @@
 package com.internet.elements;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
@@ -44,6 +42,24 @@ public class MyElement {
         String byString = by.toString();
         int separator = byString.indexOf(": ");
         this.locator = separator >= 0 ? byString.substring(separator + 2) : byString;
+    }
+
+    /**
+     * Returns the Selenium locator string used to find this element.
+     *
+     * @return the locator
+     */
+    public String locatorString() {
+        return locator;
+    }
+
+    /**
+     * Returns the Selenium byClass string used to find this element.
+     *
+     * @return the byClass
+     */
+    public String byClassString() {
+        return byClass.getSimpleName();
     }
 
     /**
