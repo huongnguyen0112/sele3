@@ -233,7 +233,6 @@ public final class MyHardAssert {
          */
         public StringAssert isEqualTo(String expected) {
             if (!Objects.equals(actual, expected)) {
-                ReportProvider.screenshot("Expected \"" + actual + "\" to be equal to \"" + expected + "\".");
                 throw failure("Expected \"" + actual + "\" to be equal to \"" + expected + "\".", null);
             }
             return this;
@@ -448,7 +447,7 @@ public final class MyHardAssert {
 
             MyWait wait = new MyWait(element).configuredWait("Waiting for assertion: " + expectation, timeout);
             try {
-                wait.ignoreAll(List.of(
+                wait.ignoreAll(List.<Class<? extends Throwable>>of(
                         NoSuchElementException.class,
                         StaleElementReferenceException.class,
                         ElementNotInteractableException.class,
