@@ -12,6 +12,7 @@ import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.InvalidElementStateException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -105,7 +106,7 @@ public class MyElement {
                 },
                 null,
                 conditions);
-        } catch (Exception e) {
+        } catch (TimeoutException e) {
             log.error("Action failed on element: " + this.locator, e);
             return;
         }
@@ -145,7 +146,7 @@ public class MyElement {
                 },
                 null,
                 conditions);
-        } catch (Exception e) {
+        } catch (TimeoutException e) {
             log.error("Get operation failed on element: " + this.locator, e);
             return null;
         }
@@ -181,7 +182,7 @@ public class MyElement {
                 },
                 duration,
                 conditions);
-        } catch (Exception e) {
+        } catch (TimeoutException e) {
             log.error("Check operation failed on element: " + this.locator, e);
             return false;
         }
