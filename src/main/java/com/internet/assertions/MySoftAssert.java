@@ -2,7 +2,6 @@ package com.internet.assertions;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -18,7 +17,7 @@ public final class MySoftAssert {
     private static final ThreadLocal<List<MySoftAssert>> PENDING_ASSERTIONS =
             ThreadLocal.withInitial(ArrayList::new);
 
-    private final List<AssertionError> failures = Collections.synchronizedList(new ArrayList<>());
+    private final ThreadLocal<List<AssertionError>> failures = ThreadLocal.withInitial(ArrayList::new);
 
     /**
      * Creates a soft assertion collector and registers it for automatic
@@ -98,14 +97,12 @@ public final class MySoftAssert {
      * <p>Example: {@code softly.assertAll();}</p>
      */
     public void assertAll() {
-        List<AssertionError> collectedFailures;
-        synchronized (failures) {
-            if (failures.isEmpty()) {
-                return;
-            }
-            collectedFailures = new ArrayList<>(failures);
-            failures.clear();
+        List<AssertionError> threadFailures = failures.get();
+        if (threadFailures.isEmpty()) {
+            return;
         }
+        List<AssertionError> collectedFailures = new ArrayList<>(threadFailures);
+        threadFailures.clear();
         AssertionError aggregate = new AssertionError(
                 "The following " + collectedFailures.size() + " soft assertion(s) failed.");
         aggregate.initCause(collectedFailures.get(0));
@@ -113,38 +110,6 @@ public final class MySoftAssert {
             aggregate.addSuppressed(collectedFailures.get(i));
         }
         throw aggregate;
-    }
-
-    /**
-     * Verifies all soft assertion instances registered on the current thread.
-     *
-     * <p>Test lifecycle listeners can call this after a test method so tests do
-     * not need to invoke {@link #assertAll()} explicitly.</p>
-     *
-     * @throws AssertionError if any registered instance contains failures
-     */
-    public static void assertAllPending() {
-        List<MySoftAssert> pending = new ArrayList<>(PENDING_ASSERTIONS.get());
-        PENDING_ASSERTIONS.remove();
-
-        List<AssertionError> collectedFailures = new ArrayList<>();
-        for (MySoftAssert assertion : pending) {
-            try {
-                assertion.assertAll();
-            } catch (AssertionError failure) {
-                collectedFailures.add(failure);
-            }
-        }
-
-        if (!collectedFailures.isEmpty()) {
-            AssertionError aggregate = new AssertionError(
-                    "Soft assertions failed in " + collectedFailures.size() + " assertion instance(s).");
-            aggregate.initCause(collectedFailures.get(0));
-            for (int i = 1; i < collectedFailures.size(); i++) {
-                aggregate.addSuppressed(collectedFailures.get(i));
-            }
-            throw aggregate;
-        }
     }
 
     /**
@@ -444,7 +409,7 @@ public final class MySoftAssert {
         try {
             assertion.run();
         } catch (AssertionError failure) {
-            failures.add(failure);
+            failures.get().add(failure);
         }
     }
 

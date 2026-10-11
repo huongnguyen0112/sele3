@@ -12,7 +12,8 @@ public final class AssertListener implements IInvokedMethodListener {
         }
 
         try {
-            MySoftAssert.assertAllPending();
+            MySoftAssert mySoftAssert = MySoftAssert.getInstance();
+            mySoftAssert.assertAll();
         } catch (AssertionError failure) {
             Throwable testFailure = testResult.getThrowable();
             if (testFailure == null) {
