@@ -17,6 +17,9 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
 import com.internet.webdriver.DriverProvider;
+
+import lombok.extern.slf4j.Slf4j;
+
 import com.internet.utils.Utilities;
 import com.internet.waits.ElementCondition;
 import com.internet.waits.ElementConditions;
@@ -26,6 +29,7 @@ import com.internet.waits.MyWait;
  * Represents a lazily located element and provides state checks, waits, and
  * user interactions for a specific locator.
  */
+@Slf4j 
 public class MyElement {
     protected By by;
     private Class<?> byClass;
@@ -87,7 +91,8 @@ public class MyElement {
      */
     @SuppressWarnings("unchecked")
     private void actionWithRetry(Consumer<WebElement> action, ElementCondition... conditions) {
-        withRetry(
+        try {
+            withRetry(
                 () -> {
                     action.accept(element());
                     return null;
@@ -100,6 +105,23 @@ public class MyElement {
                 },
                 null,
                 conditions);
+        } catch (Exception e) {
+            log.error("Action failed on element: " + this.locator, e);
+            return;
+        }
+        // withRetry(
+        //         () -> {
+        //             action.accept(element());
+        //             return null;
+        //         },
+        //         new Class[] {
+        //                 NoSuchElementException.class,
+        //                 StaleElementReferenceException.class,
+        //                 ElementNotInteractableException.class,
+        //                 InvalidElementStateException.class
+        //         },
+        //         null,
+        //         conditions);
     }
 
     /**
@@ -111,7 +133,8 @@ public class MyElement {
      */
     @SuppressWarnings("unchecked")
     private String getWithRetry(Function<WebElement, String> getter, ElementCondition... conditions) {
-        return withRetry(
+        try {
+            return withRetry(
                 () -> {
                     return getter.apply(element());
                 },
@@ -122,6 +145,21 @@ public class MyElement {
                 },
                 null,
                 conditions);
+        } catch (Exception e) {
+            log.error("Get operation failed on element: " + this.locator, e);
+            return null;
+        }
+        // return withRetry(
+        //         () -> {
+        //             return getter.apply(element());
+        //         },
+        //         new Class[] {
+        //                 NoSuchElementException.class,
+        //                 StaleElementReferenceException.class,
+        //                 InvalidElementStateException.class
+        //         },
+        //         null,
+        //         conditions);
     }
 
     /**
@@ -133,7 +171,8 @@ public class MyElement {
     @SuppressWarnings("unchecked")
         private Boolean checkWithRetry(Function<WebElement, Boolean> checker, Duration duration,
             ElementCondition... conditions) {
-        return withRetry(
+        try {
+            return withRetry(
                 () -> checker.apply(element()),
                 new Class[] {
                         NoSuchElementException.class,
@@ -142,6 +181,19 @@ public class MyElement {
                 },
                 duration,
                 conditions);
+        } catch (Exception e) {
+            log.error("Check operation failed on element: " + this.locator, e);
+            return false;
+        }
+        // return withRetry(
+        //         () -> checker.apply(element()),
+        //         new Class[] {
+        //                 NoSuchElementException.class,
+        //                 StaleElementReferenceException.class,
+        //                 ElementNotInteractableException.class
+        //         },
+        //         duration,
+        //         conditions);
     }
 
     /**
