@@ -92,8 +92,7 @@ public class MyElement {
      */
     @SuppressWarnings("unchecked")
     private void actionWithRetry(Consumer<WebElement> action, ElementCondition... conditions) {
-        try {
-            withRetry(
+        withRetry(
                 () -> {
                     action.accept(element());
                     return null;
@@ -102,27 +101,11 @@ public class MyElement {
                         NoSuchElementException.class,
                         StaleElementReferenceException.class,
                         ElementNotInteractableException.class,
-                        InvalidElementStateException.class
+                        InvalidElementStateException.class,
+                        TimeoutException.class
                 },
                 null,
                 conditions);
-        } catch (TimeoutException e) {
-            log.error("Action failed on element: " + this.locator, e);
-            return;
-        }
-        // withRetry(
-        //         () -> {
-        //             action.accept(element());
-        //             return null;
-        //         },
-        //         new Class[] {
-        //                 NoSuchElementException.class,
-        //                 StaleElementReferenceException.class,
-        //                 ElementNotInteractableException.class,
-        //                 InvalidElementStateException.class
-        //         },
-        //         null,
-        //         conditions);
     }
 
     /**
@@ -134,33 +117,18 @@ public class MyElement {
      */
     @SuppressWarnings("unchecked")
     private String getWithRetry(Function<WebElement, String> getter, ElementCondition... conditions) {
-        try {
-            return withRetry(
+        return withRetry(
                 () -> {
                     return getter.apply(element());
                 },
                 new Class[] {
                         NoSuchElementException.class,
                         StaleElementReferenceException.class,
-                        InvalidElementStateException.class
+                        InvalidElementStateException.class,
+                        TimeoutException.class
                 },
                 null,
                 conditions);
-        } catch (TimeoutException e) {
-            log.error("Get operation failed on element: " + this.locator, e);
-            return null;
-        }
-        // return withRetry(
-        //         () -> {
-        //             return getter.apply(element());
-        //         },
-        //         new Class[] {
-        //                 NoSuchElementException.class,
-        //                 StaleElementReferenceException.class,
-        //                 InvalidElementStateException.class
-        //         },
-        //         null,
-        //         conditions);
     }
 
     /**
@@ -172,29 +140,16 @@ public class MyElement {
     @SuppressWarnings("unchecked")
         private Boolean checkWithRetry(Function<WebElement, Boolean> checker, Duration duration,
             ElementCondition... conditions) {
-        try {
-            return withRetry(
+        return withRetry(
                 () -> checker.apply(element()),
                 new Class[] {
                         NoSuchElementException.class,
                         StaleElementReferenceException.class,
-                        ElementNotInteractableException.class
+                        ElementNotInteractableException.class,
+                        TimeoutException.class
                 },
                 duration,
                 conditions);
-        } catch (TimeoutException e) {
-            log.error("Check operation failed on element: " + this.locator, e);
-            return false;
-        }
-        // return withRetry(
-        //         () -> checker.apply(element()),
-        //         new Class[] {
-        //                 NoSuchElementException.class,
-        //                 StaleElementReferenceException.class,
-        //                 ElementNotInteractableException.class
-        //         },
-        //         duration,
-        //         conditions);
     }
 
     /**
