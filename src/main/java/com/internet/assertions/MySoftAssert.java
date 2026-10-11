@@ -17,7 +17,7 @@ public final class MySoftAssert {
     private static final ThreadLocal<List<MySoftAssert>> PENDING_ASSERTIONS =
             ThreadLocal.withInitial(ArrayList::new);
 
-    private final ThreadLocal<List<AssertionError>> failures = ThreadLocal.withInitial(ArrayList::new);
+    private static final ThreadLocal<List<AssertionError>> failures = ThreadLocal.withInitial(ArrayList::new);
 
     /**
      * Creates a soft assertion collector and registers it for automatic
@@ -98,6 +98,11 @@ public final class MySoftAssert {
      */
     public void assertAll() {
         List<AssertionError> threadFailures = failures.get();
+        assertAll(threadFailures);
+        threadFailures.clear();
+    }
+
+    public static void assertAll(List<AssertionError> threadFailures) {
         if (threadFailures.isEmpty()) {
             return;
         }
@@ -413,7 +418,8 @@ public final class MySoftAssert {
         }
     }
 
-    public static MySoftAssert getInstance() {
-            return PENDING_ASSERTIONS.get().isEmpty() ? new MySoftAssert() : PENDING_ASSERTIONS.get().get(PENDING_ASSERTIONS.get().size() - 1);
+    public static List<AssertionError> getThreadFailures() {
+        List<AssertionError> threadFailures = failures.get();
+        return threadFailures;
     }
 }
