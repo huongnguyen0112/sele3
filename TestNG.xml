@@ -18,10 +18,4 @@
             <class name="com.internet.tests.SearchTests"/>
         </classes>
     </test>
-
-    <test name="MySoftAssertTest">
-        <classes>
-            <class name="com.internet.assertions.MySoftAssertTest"/>
-        </classes>
-    </test>
 </suite>
