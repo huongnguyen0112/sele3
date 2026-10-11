@@ -89,32 +89,20 @@ public final class MySoftAssert {
     }
 
     /**
-     * Throws one error containing failures collected by all soft assertion
-     * collectors registered on the current thread. Registrations and reported
-     * failures are cleared, so they will not be reported again automatically.
+     * Throws one error containing all failures collected by this instance.
+     * Call this after completing the soft assertions in a test; failures
+     * reported here are cleared and will not be reported again automatically.
      *
      * @throws AssertionError if one or more assertions failed
      * <p>Example: {@code softly.assertAll();}</p>
      */
     public void assertAll() {
-        List<MySoftAssert> pendingAssertions = PENDING_ASSERTIONS.get();
-        PENDING_ASSERTIONS.remove();
-
-        if (!pendingAssertions.contains(this)) {
-            pendingAssertions.add(this);
-        }
-
-        List<AssertionError> collectedFailures = new ArrayList<>();
-        for (MySoftAssert pendingAssertion : pendingAssertions) {
-            List<AssertionError> threadFailures = pendingAssertion.failures.get();
-            collectedFailures.addAll(threadFailures);
-            threadFailures.clear();
-        }
-
-        if (collectedFailures.isEmpty()) {
+        List<AssertionError> threadFailures = failures.get();
+        if (threadFailures.isEmpty()) {
             return;
         }
-
+        List<AssertionError> collectedFailures = new ArrayList<>(threadFailures);
+        threadFailures.clear();
         AssertionError aggregate = new AssertionError(
                 "The following " + collectedFailures.size() + " soft assertion(s) failed.");
         aggregate.initCause(collectedFailures.get(0));
@@ -426,9 +414,6 @@ public final class MySoftAssert {
     }
 
     public static MySoftAssert getInstance() {
-        List<MySoftAssert> pendingAssertions = PENDING_ASSERTIONS.get();
-        return pendingAssertions.isEmpty()
-                ? new MySoftAssert()
-                : pendingAssertions.get(pendingAssertions.size() - 1);
+            return PENDING_ASSERTIONS.get().isEmpty() ? new MySoftAssert() : PENDING_ASSERTIONS.get().get(PENDING_ASSERTIONS.get().size() - 1);
     }
 }
