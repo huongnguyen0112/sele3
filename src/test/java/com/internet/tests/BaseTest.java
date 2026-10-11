@@ -5,6 +5,7 @@ import com.internet.webdriver.DriverConfig;
 import com.internet.webdriver.DriverProvider;
 import org.testng.annotations.*;
 
+@Listeners(com.internet.assertions.AssertListener.class)
 public class BaseTest {
     String configFile;
     /**
