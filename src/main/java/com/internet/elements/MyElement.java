@@ -307,10 +307,10 @@ public class MyElement {
 
     public boolean isChecked(Duration duration) {
         return checkWithRetry(
-            webElement -> webElement.isDisplayed()
-                    && webElement.isEnabled()
-                    && webElement.isSelected(),
-            duration
+            webElement -> Boolean.TRUE.equals(webElement.isSelected()),
+            duration,
+            ElementConditions.VISIBLE,
+            ElementConditions.ENABLED
         );
     }
 
