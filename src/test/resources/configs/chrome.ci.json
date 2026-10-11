@@ -1,0 +1,16 @@
+{
+  "browser": "chrome",
+  "capabilities": {
+  },
+  "arguments": [
+    "--disable-blink-features",
+    "--disable-blink-features=AutomationControlled",
+    "--remote-allow-origins=*",
+    "--no-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu",
+    "--window-size=1920,1080"
+  ],
+  "remoteUrl": "",
+  "headless": true
+}

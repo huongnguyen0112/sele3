@@ -16,6 +16,7 @@
         <log4j-version>2.26.1</log4j-version>
         <extentreports-version>5.0.8</extentreports-version>
         <maven-surefire-plugin-version>3.5.3</maven-surefire-plugin-version>
+        <surefire.suiteXmlFiles>TestNG.xml</surefire.suiteXmlFiles>
     </properties>
 
     <dependencies>
@@ -97,7 +98,7 @@
                 <version>${maven-surefire-plugin-version}</version>
                 <configuration>
                     <suiteXmlFiles>
-                        <suiteXmlFile>TestNG.xml</suiteXmlFile>
+                        <suiteXmlFile>${surefire.suiteXmlFiles}</suiteXmlFile>
                     </suiteXmlFiles>
                     <argLine>
                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"

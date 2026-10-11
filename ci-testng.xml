@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="CI Test Suite" parallel="tests" thread-count="1">
+    <listeners>
+        <listener class-name="com.internet.assertions.AssertListener"/>
+    </listeners>
+
+    <test name="ChromeCITest">
+        <parameter name="config" value="chrome.ci.json" />
+        <classes>
+            <class name="com.internet.tests.SearchTests"/>
+        </classes>
+    </test>
+</suite>
