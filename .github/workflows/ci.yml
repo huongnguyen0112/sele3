@@ -39,7 +39,7 @@ jobs:
 
       - name: Run Maven tests
         run: |
-          mvn -B -DskipTests=false -Dsurefire.suiteXmlFiles=ci-testng.xml test
+          mvn clean test -Dtest=testNG.xml -Dbrowser=chrome -Dreports="allure" -Dtimeout=15
 
       - name: Upload test artifacts
         if: always()
