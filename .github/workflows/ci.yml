@@ -16,13 +16,9 @@ on:
         type: string
         default: cicd
       browser:
-        description: Browser for Selenium tests
-        type: choice
-        options:
-          - chrome
-          - firefox
-          - edge
-        default: chrome
+        description: Browser(s) for Selenium tests (comma-separated, e.g. chrome,firefox)
+        type: string
+        default: chrome, edge
       reports:
         description: Report format
         type: string
@@ -78,7 +74,7 @@ jobs:
       - name: Run Maven tests
         env:
           TEST_SUITE: ${{ inputs.test_suite || 'cicd' }}
-          BROWSER: ${{ inputs.browser || 'chrome' }}
+          BROWSER: ${{ inputs.browser || 'chrome, edge' }}
           REPORTS: ${{ inputs.reports || 'allure' }}
           TEST_TIMEOUT: ${{ inputs.timeout || '15' }}
         run: |
