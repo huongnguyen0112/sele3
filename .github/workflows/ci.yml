@@ -18,7 +18,7 @@ on:
       browser:
         description: Browser(s) for Selenium tests (comma-separated, e.g. chrome,firefox)
         type: string
-        default: chrome, edge
+        default: chrome,edge
       reports:
         description: Report format
         type: string
