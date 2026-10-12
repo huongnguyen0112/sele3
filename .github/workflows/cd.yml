@@ -10,6 +10,9 @@ jobs:
   package:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Check out repository
@@ -21,12 +24,12 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: maven
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
 
-      - name: Build project artifact
-        run: mvn -B -DskipTests package
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: application-package
-          path: target/*.jar
+      - name: Deploy to GitHub Packages
+        run: mvn -B -DskipTests deploy -DaltDeploymentRepository=github::https://maven.pkg.github.com/${GITHUB_REPOSITORY}
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

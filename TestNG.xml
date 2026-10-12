@@ -8,14 +8,14 @@
     <test name="EdgeTest">
         <parameter name="config" value="edge.json" />
         <classes>
-            <class name="com.internet.tests.search.SearchTests"/>
+            <class name="com.internet.tests.SearchTests"/>
         </classes>
     </test>
 
     <test name="ChromeTest">
         <parameter name="config" value="chrome.json" />
         <classes>
-            <class name="com.internet.tests.search.SearchTests"/>
+            <class name="com.internet.tests.SearchTests"/>
         </classes>
     </test>
 </suite>

@@ -10,6 +10,23 @@ on:
       - main
       - master
   workflow_dispatch:
+    inputs:
+      test_suite:
+        description: Maven test selector
+        type: string
+        default: testNG.xml
+      browser:
+        description: Browser to use
+        type: string
+        default: chrome
+      reports:
+        description: Report format
+        type: string
+        default: allure
+      timeout:
+        description: Test timeout in minutes
+        type: string
+        default: '15'
 
 jobs:
   build-and-test:
@@ -38,8 +55,13 @@ jobs:
           echo "CHROME_BIN=$(which google-chrome || which google-chrome-stable || which chromium || which chromium-browser)" >> "$GITHUB_ENV"
 
       - name: Run Maven tests
+        env:
+          TEST_SUITE: ${{ inputs.test_suite || 'testNG.xml' }}
+          BROWSER: ${{ inputs.browser || 'chrome' }}
+          REPORTS: ${{ inputs.reports || 'allure' }}
+          TEST_TIMEOUT: ${{ inputs.timeout || '15' }}
         run: |
-          mvn clean test -Dtest=testNG.xml -Dbrowser=chrome -Dreports="allure" -Dtimeout=15
+          mvn clean test -DsuiteXmlFile="$TEST_SUITE" -Dbrowser="$BROWSER" -Dreports="$REPORTS" -Dtimeout="$TEST_TIMEOUT"
 
       - name: Upload test artifacts
         if: always()
