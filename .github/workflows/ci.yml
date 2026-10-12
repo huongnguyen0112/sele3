@@ -14,10 +14,14 @@ on:
       test_suite:
         description: Maven test selector
         type: string
-        default: testNG.xml
+        default: cicd
       browser:
-        description: Browser to use
-        type: string
+        description: Browser for Selenium tests
+        type: choice
+        options:
+          - chrome
+          - firefox
+          - edge
         default: chrome
       reports:
         description: Report format
@@ -45,14 +49,31 @@ jobs:
           cache: maven
 
       - name: Install Chrome for Selenium
+        if: ${{ (inputs.browser || 'chrome') == 'chrome' }}
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: stable
 
+      - name: Install Firefox for Selenium
+        if: ${{ inputs.browser == 'firefox' }}
+        uses: browser-actions/setup-firefox@v1
+
+      - name: Install Edge for Selenium
+        if: ${{ inputs.browser == 'edge' }}
+        uses: browser-actions/setup-edge@v1
+
       - name: Set browser path for Selenium
+        env:
+          BROWSER: ${{ inputs.browser || 'chrome' }}
         shell: bash
         run: |
-          echo "CHROME_BIN=$(which google-chrome || which google-chrome-stable || which chromium || which chromium-browser)" >> "$GITHUB_ENV"
+          case "$BROWSER" in
+            chrome) BROWSER_BIN=$(which google-chrome || which google-chrome-stable || which chromium || which chromium-browser) ;;
+            firefox) BROWSER_BIN=$(which firefox) ;;
+            edge) BROWSER_BIN=$(which microsoft-edge || which microsoft-edge-stable) ;;
+          esac
+          echo "BROWSER=$BROWSER" >> "$GITHUB_ENV"
+          echo "BROWSER_BIN=$BROWSER_BIN" >> "$GITHUB_ENV"
 
       - name: Run Maven tests
         env:
@@ -61,7 +82,7 @@ jobs:
           REPORTS: ${{ inputs.reports || 'allure' }}
           TEST_TIMEOUT: ${{ inputs.timeout || '15' }}
         run: |
-          mvn clean test -Dsuite="$TEST_SUITE" -Dbrowser="$BROWSER" -Dreports="$REPORTS" -Dtimeout="$TEST_TIMEOUT"
+          mvn clean test -Dsuite="$TEST_SUITE" -Dbrowser="$BROWSER" -Dbrowser.bin="$BROWSER_BIN" -Dreports="$REPORTS" -Dtimeout="$TEST_TIMEOUT"
 
       - name: Upload test artifacts
         if: always()
