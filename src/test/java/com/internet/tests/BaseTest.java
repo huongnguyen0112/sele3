@@ -35,7 +35,7 @@ public class BaseTest {
      */
     @AfterMethod
     public void afterMethod() {
-        DriverProvider.getWebDriver().quit();
+        DriverProvider.stopWebDriver();
         ReportProvider.finish("zzz");
         ReportProvider.flush();
     }

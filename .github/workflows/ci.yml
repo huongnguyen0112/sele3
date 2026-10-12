@@ -12,13 +12,9 @@ on:
   workflow_dispatch:
     inputs:
       test_suite:
-        description: Maven test selector
+        description: TestNG suite XML file
         type: string
-        default: cicd
-      browser:
-        description: Browser(s) for Selenium tests (comma-separated, e.g. chrome,firefox)
-        type: string
-        default: chrome,edge
+        default: TestNG.xml
       reports:
         description: Report format
         type: string
@@ -45,40 +41,21 @@ jobs:
           cache: maven
 
       - name: Install Chrome for Selenium
-        if: ${{ (inputs.browser || 'chrome') == 'chrome' }}
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: stable
 
-      - name: Install Firefox for Selenium
-        if: ${{ inputs.browser == 'firefox' }}
-        uses: browser-actions/setup-firefox@v1
-
       - name: Install Edge for Selenium
-        if: ${{ inputs.browser == 'edge' }}
         uses: browser-actions/setup-edge@v1
-
-      - name: Set browser path for Selenium
-        env:
-          BROWSER: ${{ inputs.browser || 'chrome' }}
-        shell: bash
-        run: |
-          case "$BROWSER" in
-            chrome) BROWSER_BIN=$(which google-chrome || which google-chrome-stable || which chromium || which chromium-browser) ;;
-            firefox) BROWSER_BIN=$(which firefox) ;;
-            edge) BROWSER_BIN=$(which microsoft-edge || which microsoft-edge-stable) ;;
-          esac
-          echo "BROWSER=$BROWSER" >> "$GITHUB_ENV"
-          echo "BROWSER_BIN=$BROWSER_BIN" >> "$GITHUB_ENV"
 
       - name: Run Maven tests
         env:
-          TEST_SUITE: ${{ inputs.test_suite || 'cicd' }}
-          BROWSER: ${{ inputs.browser || 'chrome, edge' }}
+          TEST_SUITE: ${{ inputs.test_suite || 'TestNG.xml' }}
           REPORTS: ${{ inputs.reports || 'allure' }}
-          TEST_TIMEOUT: ${{ inputs.timeout || '15' }}
+          TEST_TIMEOUT_MINUTES: ${{ inputs.timeout || '15' }}
         run: |
-          mvn clean test -Dsuite="$TEST_SUITE" -Dbrowser="$BROWSER" -Dbrowser.bin="$BROWSER_BIN" -Dreports="$REPORTS" -Dtimeout="$TEST_TIMEOUT"
+          TEST_TIMEOUT_MS=$((TEST_TIMEOUT_MINUTES * 60000))
+          mvn -B clean test -Dsurefire.suiteXmlFiles="$TEST_SUITE" -Dreports="$REPORTS" -Dtimeout="$TEST_TIMEOUT_MS"
 
       - name: Upload test artifacts
         if: always()

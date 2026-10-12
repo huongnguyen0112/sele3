@@ -8,5 +8,5 @@
     "--remote-allow-origins=*"
   ],
   "remoteUrl": "",
-  "headless": false
+  "headless": true
 }

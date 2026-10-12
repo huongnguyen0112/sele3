@@ -50,4 +50,18 @@ public class DriverProvider {
         WebDriver localWebDriver = newInstance(config).create(config);
         setWebDriver(localWebDriver);
     }
+
+    /**
+     * Closes and removes the WebDriver associated with the current thread.
+     */
+    public static void stopWebDriver() {
+        WebDriver webDriver = WEB_DRIVER.get();
+        try {
+            if (webDriver != null) {
+                webDriver.quit();
+            }
+        } finally {
+            WEB_DRIVER.remove();
+        }
+    }
 }
