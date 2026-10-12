@@ -56,12 +56,12 @@ jobs:
 
       - name: Run Maven tests
         env:
-          TEST_SUITE: ${{ inputs.test_suite || 'testNG.xml' }}
+          TEST_SUITE: ${{ inputs.test_suite || 'cicd' }}
           BROWSER: ${{ inputs.browser || 'chrome' }}
           REPORTS: ${{ inputs.reports || 'allure' }}
           TEST_TIMEOUT: ${{ inputs.timeout || '15' }}
         run: |
-          mvn clean test -DsuiteXmlFile="$TEST_SUITE" -Dbrowser="$BROWSER" -Dreports="$REPORTS" -Dtimeout="$TEST_TIMEOUT"
+          mvn clean test -Dsuite="$TEST_SUITE" -Dbrowser="$BROWSER" -Dreports="$REPORTS" -Dtimeout="$TEST_TIMEOUT"
 
       - name: Upload test artifacts
         if: always()
