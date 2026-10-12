@@ -288,7 +288,11 @@ public class MyElement {
     }
 
     public boolean isDisplayed(Duration duration) {
-        return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isDisplayed()), duration);
+        try {
+            return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isDisplayed()), duration);
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     /**
