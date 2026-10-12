@@ -14,20 +14,7 @@ import com.internet.waits.ElementCondition;
  * collected until {@link #assertAll()} is called or the test method finishes.
  */
 public final class MySoftAssert {
-    private static final ThreadLocal<List<MySoftAssert>> PENDING_ASSERTIONS =
-            ThreadLocal.withInitial(ArrayList::new);
-
     private static final ThreadLocal<List<AssertionError>> failures = ThreadLocal.withInitial(ArrayList::new);
-
-    /**
-     * Creates a soft assertion collector and registers it for automatic
-     * verification when the current test method finishes.
-     *
-     * <p>Example: {@code MySoftAssert softly = new MySoftAssert();}</p>
-     */
-    public MySoftAssert() {
-        PENDING_ASSERTIONS.get().add(this);
-    }
 
     /**
      * Starts collecting integer assertions in this soft assertion collector.
@@ -96,13 +83,8 @@ public final class MySoftAssert {
      * @throws AssertionError if one or more assertions failed
      * <p>Example: {@code softly.assertAll();}</p>
      */
-    public void assertAll() {
+    public static void assertAll() {
         List<AssertionError> threadFailures = failures.get();
-        assertAll(threadFailures);
-        threadFailures.clear();
-    }
-
-    public static void assertAll(List<AssertionError> threadFailures) {
         if (threadFailures.isEmpty()) {
             return;
         }
@@ -393,7 +375,7 @@ public final class MySoftAssert {
 
         /**
          * Runs a hard assertion and stores any resulting assertion failure for
-         * later reporting by {@link #assertAll()} or {@link #assertAllPending()}.
+         * later reporting by {@link #assertAll()} or when the test method finishes.
          *
          * @param assertion assertion operation to run
          * @return this element assertion for chaining
@@ -416,10 +398,5 @@ public final class MySoftAssert {
         } catch (AssertionError failure) {
             failures.get().add(failure);
         }
-    }
-
-    public static List<AssertionError> getThreadFailures() {
-        List<AssertionError> threadFailures = failures.get();
-        return threadFailures;
     }
 }

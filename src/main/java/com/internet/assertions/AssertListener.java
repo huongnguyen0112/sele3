@@ -1,7 +1,5 @@
 package com.internet.assertions;
 
-import java.util.List;
-
 import org.testng.IInvokedMethod;
 import org.testng.IInvokedMethodListener;
 import org.testng.ITestResult;
@@ -14,8 +12,7 @@ public final class AssertListener implements IInvokedMethodListener {
         }
 
         try {
-            List<AssertionError> threadFailures = MySoftAssert.getThreadFailures();
-            MySoftAssert.assertAll(threadFailures);
+            MySoftAssert.assertAll();
         } catch (AssertionError failure) {
             Throwable testFailure = testResult.getThrowable();
             if (testFailure == null) {
