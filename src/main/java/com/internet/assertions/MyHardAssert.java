@@ -8,8 +8,6 @@ import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.InvalidElementStateException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
-import org.openqa.selenium.TimeoutException;
-
 import com.internet.elements.MyElement;
 import com.internet.reports.ReportProvider;
 import com.internet.waits.ElementCondition;
@@ -396,7 +394,7 @@ public final class MyHardAssert {
          * <p>Example: {@code MyHardAssert.assertThat(termsCheckbox).isChecked();}</p>
          */
         public ElementAssert isChecked() {
-            return satisfies("to become checked", candidate -> candidate.element().isSelected());
+            return satisfies("to become checked", candidate -> candidate.isChecked(timeout));
         }
 
         /**
@@ -411,7 +409,7 @@ public final class MyHardAssert {
         public ElementAssert hasText(String expectedText) {
             Objects.requireNonNull(expectedText, "expectedText must not be null");
             return satisfies("to have text exactly \"" + expectedText + "\"",
-                    candidate -> expectedText.equals(candidate.element().getText()));
+                    candidate -> expectedText.equals(candidate.getText()));
         }
 
         /**
@@ -426,7 +424,7 @@ public final class MyHardAssert {
         public ElementAssert containsText(String expectedText) {
             Objects.requireNonNull(expectedText, "expectedText must not be null");
             return satisfies("to contain text \"" + expectedText + "\"",
-                    candidate -> candidate.element().getText().contains(expectedText));
+                    candidate -> candidate.getText().contains(expectedText));
         }
 
         /**
@@ -444,7 +442,8 @@ public final class MyHardAssert {
             Objects.requireNonNull(expectation, "expectation must not be null");
             Objects.requireNonNull(condition, "condition must not be null");
 
-            MyWait wait = new MyWait(element).configuredWait("Waiting for assertion: " + expectation, timeout);
+            MyAssertWait wait = new MyAssertWait(element);
+            wait.configuredWait("Waiting for assertion: " + expectation, timeout);
             try {
                 wait.ignoreAll(List.<Class<? extends Throwable>>of(
                         NoSuchElementException.class,
@@ -453,7 +452,7 @@ public final class MyHardAssert {
                         InvalidElementStateException.class
                 ));
                 wait.waitUntil(condition);
-            } catch (TimeoutException e) {
+            } catch (MyWaitException e) {
                 Throwable cause = e.getCause();
                 String reason;
                 if (cause instanceof NoSuchElementException) {

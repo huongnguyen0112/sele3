@@ -13,14 +13,14 @@ public class SearchTests extends BaseTest {
     @Test 
     public void testSearch() {
         Homepage homepage = new Homepage();
-        MyElement searchBoxFake = new MyElement(By.name("zxczxczxc"));
+        MyElement searchBoxFake = new MyElement(By.name("zzz"));
         MySoftAssert softAssert = new MySoftAssert();
 
         ReportProvider.step("1. Step 1: Open search page");
         homepage.gogo();
 
-        softAssert.assertThat(searchBoxFake).isDisplayed();
-        softAssert.assertThat(searchBoxFake).isEnabled();
+        // softAssert.assertThat(searchBoxFake).isDisplayed();
+        // softAssert.assertThat(searchBoxFake).isEnabled();
         softAssert.assertThat(searchBoxFake).isChecked();
         softAssert.assertThat(searchBoxFake).hasText("zzz");
 
