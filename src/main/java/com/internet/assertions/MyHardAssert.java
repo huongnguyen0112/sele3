@@ -396,7 +396,7 @@ public final class MyHardAssert {
          * <p>Example: {@code MyHardAssert.assertThat(termsCheckbox).isChecked();}</p>
          */
         public ElementAssert isChecked() {
-            return satisfies("to become checked", candidate -> candidate.isChecked(timeout));
+            return satisfies("to become checked", candidate -> candidate.element().isSelected());
         }
 
         /**
@@ -440,7 +440,6 @@ public final class MyHardAssert {
          *         unmet expectation and effective timeout duration
          * <p>Example: {@code MyHardAssert.assertThat(searchBox).satisfies("to contain query", element -> "Selenium".equals(element.element().getAttribute("value")));}</p>
          */
-        @SuppressWarnings("null")
         public ElementAssert satisfies(String expectation, ElementCondition condition) {
             Objects.requireNonNull(expectation, "expectation must not be null");
             Objects.requireNonNull(condition, "condition must not be null");
@@ -455,9 +454,27 @@ public final class MyHardAssert {
                 ));
                 wait.waitUntil(condition);
             } catch (TimeoutException e) {
+                Throwable cause = e.getCause();
+                String reason;
+                if (cause instanceof NoSuchElementException) {
+                    reason = "the element does not exist";
+                } else if (cause instanceof StaleElementReferenceException) {
+                    reason = "the element is stale (no longer attached to the DOM)";
+                } else if (cause instanceof ElementNotInteractableException) {
+                    reason = "the element is not interactable";
+                } else if (cause instanceof InvalidElementStateException) {
+                    reason = "the element is in an invalid state";
+                } else {
+                    reason = "the condition was not met";
+                }
                 throw failure("Timed out waiting for the element (find by: " + element.byClassString() + "; locator: '"
                         + element.locatorString() + "') " + expectation + " within "
-                        + formatDuration(wait.getConfiguredTimeout()) + ".", e);
+                        + formatDuration(wait.getConfiguredTimeout()) + ". Reason: " + reason
+                        + (cause != null && cause.getMessage() != null
+                                ? " (" + cause.getClass().getSimpleName() + ": "
+                                        + cause.getMessage().split("\\R", 2)[0] + ")"
+                                : "")
+                        + ".", e);
             }
             return this;
         }

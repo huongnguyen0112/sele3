@@ -138,8 +138,8 @@ public class MyElement {
      * @return the Boolean result of the check
      */
     @SuppressWarnings("unchecked")
-        private Boolean checkWithRetry(Function<WebElement, Boolean> checker, Duration duration,
-            ElementCondition... conditions) {
+    private Boolean checkWithRetry(Function<WebElement, Boolean> checker, Duration duration,
+        ElementCondition... conditions) {
         return withRetry(
                 () -> checker.apply(element()),
                 new Class[] {
