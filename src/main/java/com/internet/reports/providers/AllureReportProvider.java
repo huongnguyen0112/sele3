@@ -8,6 +8,7 @@ import org.openqa.selenium.TakesScreenshot;
 import com.internet.webdriver.DriverProvider;
 
 import io.qameta.allure.Allure;
+import io.qameta.allure.model.Status;
 
 public class AllureReportProvider implements ReportProviderInterface {
     /**
@@ -18,6 +19,16 @@ public class AllureReportProvider implements ReportProviderInterface {
     @Override
     public void log(String message) {
         Allure.step(message);
+    }
+
+    /**
+     * Records a failed step in the Allure report.
+     *
+     * @param message the failure message to record
+     */
+    @Override
+    public void fail(String message) {
+        Allure.step(message, Status.FAILED);
     }
 
     /**

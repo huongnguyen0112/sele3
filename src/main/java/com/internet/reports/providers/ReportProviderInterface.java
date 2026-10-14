@@ -9,6 +9,13 @@ public interface ReportProviderInterface {
     void log(String message);
 
     /**
+     * Records a failed assertion and marks the current test as failed.
+     *
+     * @param message the failure message to record
+     */
+    void fail(String message);
+
+    /**
      * Records a named test step in the report.
      *
      * @param step the step description to record

@@ -1,33 +1,22 @@
 package com.internet.tests;
 
-import com.internet.configuration.Constants;
 import com.internet.reports.ReportProvider;
 import com.internet.webdriver.DriverConfig;
 import com.internet.webdriver.DriverProvider;
 import org.testng.annotations.*;
 
+@Listeners(com.internet.assertions.AssertListener.class)
 public class BaseTest {
-    String configFile;
-    /**
-     * Stores the TestNG configuration file name for the test class.
-     *
-     * @param config configuration file name supplied by TestNG
-     */
-    @BeforeClass
-    @Parameters({"config"})
-    public void loadConfig(@Optional("chrome.json") String config) {
-        configFile = config;
-    }
+
     /**
      * Starts a configured browser, maximizes it, and navigates to the base URL.
      */
     @BeforeMethod
     public void startTest() {
         ReportProvider.start("zzz");
-        DriverConfig driverConfig = DriverConfig.loadFromFile(configFile);
+        DriverConfig driverConfig = DriverConfig.init();
         DriverProvider.startWebDriver(driverConfig);
-        DriverProvider.getWebDriver().manage().window().maximize();
-        DriverProvider.getWebDriver().navigate().to(Constants.BASE_URL);
+        DriverProvider.maximizeWindow();
     }
 
     /**
@@ -35,8 +24,7 @@ public class BaseTest {
      */
     @AfterMethod
     public void afterMethod() {
-        DriverProvider.getWebDriver().quit();
+        DriverProvider.quitWebDriver();
         ReportProvider.finish("zzz");
-        ReportProvider.flush();
     }
 }

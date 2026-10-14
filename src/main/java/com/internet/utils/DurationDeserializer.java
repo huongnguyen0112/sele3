@@ -6,6 +6,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Converts JSON duration values into {@link Duration} objects.
+ * Supports both millisecond numbers and ISO-8601 duration strings,
+ * so configuration values can be represented consistently in test settings.
+ */
 import java.lang.reflect.Type;
 import java.time.Duration;
 

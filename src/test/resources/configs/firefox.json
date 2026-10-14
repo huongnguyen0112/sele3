@@ -1,0 +1,9 @@
+{
+  "browser": "firefox",
+  "capabilities": {
+  },
+  "arguments": [
+  ],
+  "remoteUrl": "",
+  "headless": true
+}

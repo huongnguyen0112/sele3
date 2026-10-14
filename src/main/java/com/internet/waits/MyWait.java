@@ -17,6 +17,7 @@ public class MyWait extends FluentWait<WebDriver> {
 
     private final MyElement element;
     private final Duration timeout;
+    private Duration configuredTimeout;
     private final Duration pollingInterval;
 
     /**
@@ -29,6 +30,7 @@ public class MyWait extends FluentWait<WebDriver> {
         this.element = element;
         Configurations configurations = Configurations.init();
         this.timeout = configurations.getTimeout();
+        this.configuredTimeout = this.timeout;
         this.pollingInterval = configurations.getPollingInterval();
         super.withTimeout(timeout).pollingEvery(pollingInterval);
     }
@@ -57,16 +59,38 @@ public class MyWait extends FluentWait<WebDriver> {
             return true;
         });
     }
-    
-    
+
+    /**
+     * Applies the default configured timeout and polling settings with a custom wait message.
+     *
+     * @param message message shown when the wait times out
+     * @return this wait instance updated with the supplied message
+     */
     public MyWait configuredWait(String message) {
         return configuredWait(message, null);
     }
 
+    /**
+     * Applies a custom timeout and polling configuration for this wait with a descriptive message.
+     *
+     * @param message message shown when the wait times out
+     * @param duration custom timeout to use for this wait; if {@code null}, the default timeout is retained
+     * @return this wait instance updated with the custom timeout settings
+     */
     public MyWait configuredWait(String message, Duration duration) {
-        super.withTimeout(duration == null ? timeout : duration)
+        configuredTimeout = duration == null ? timeout : duration;
+        super.withTimeout(configuredTimeout)
                 .pollingEvery(pollingInterval)
                 .withMessage(message);
         return this;
+    }
+
+    /**
+     * Returns the timeout currently applied to this wait.
+     *
+     * @return the effective timeout duration
+     */
+    public Duration getConfiguredTimeout() {
+        return configuredTimeout;
     }
 }

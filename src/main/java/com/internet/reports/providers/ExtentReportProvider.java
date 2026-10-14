@@ -107,6 +107,18 @@ public class ExtentReportProvider implements ReportProviderInterface {
     }
 
     /**
+     * Marks the current test as failed and records the failure message.
+     *
+     * @param message the failure reason to log in the report
+     */
+    @Override
+    public void fail(String message) {
+        if (getTest() != null) {
+            getTest().fail(message);
+        }
+    }
+
+    /**
      * Adds a test step to the current Extent test.
      *
      * @param step the step description to record
