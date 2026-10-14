@@ -1,4 +1,5 @@
 {
+  "browser": "edge",
   "reports": "allure",
   "timeout": 4000,
   "pollingInterval": 200

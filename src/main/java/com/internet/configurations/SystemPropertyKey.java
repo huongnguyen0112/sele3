@@ -1,6 +1,7 @@
 package com.internet.configurations;
 
 public class SystemPropertyKey {
+    public static final String BROWSER = "browser";
     public static final String ENV = "env";
     public static final String TEST = "test";
     public static final String SUITE = "suite";

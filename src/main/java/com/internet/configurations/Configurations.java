@@ -19,8 +19,10 @@ public class Configurations {
     private static final int DEFAULT_TIMEOUT_MS = 10000;
     private static final int DEFAULT_POLLING_INTERVAL_MS = 200;
     private static final String DEFAULT_REPORTS = "allure";
+    private static final String DEFAULT_BROWSER = "chrome";
 
     private String reports;
+    private String browser;
     private Duration timeout;
     private Duration pollingInterval;
 
@@ -85,7 +87,7 @@ public class Configurations {
      *         polling interval values
      */
     public static Configurations init() {
-        return init(DEFAULT_REPORTS, DEFAULT_TIMEOUT_MS, DEFAULT_POLLING_INTERVAL_MS);
+        return init(DEFAULT_REPORTS, DEFAULT_BROWSER, DEFAULT_TIMEOUT_MS, DEFAULT_POLLING_INTERVAL_MS);
     }
 
     /**
@@ -99,17 +101,20 @@ public class Configurations {
      *                               when no configuration value is provided
      * @return the initialized configuration with custom default timing values
      */
-    public static Configurations init(String defaultReports, int defaultTimeout, int defaultPollingInterval) {
+    public static Configurations init(String defaultReports, String defaultBrowser, int defaultTimeout, int defaultPollingInterval) {
         Configurations configurations = loadFromFile("configurations.json");
         if (configurations == null) {
             configurations = Configurations.builder()
                     .reports(defaultReports)
+                    .browser(defaultBrowser)
                     .timeout(Duration.ofMillis(defaultTimeout))
                     .pollingInterval(Duration.ofMillis(defaultPollingInterval))
                     .build();
         } else {
             configurations.setReports(configurations.getReports() == null
                     ? defaultReports : configurations.getReports());
+            configurations.setBrowser(configurations.getBrowser() == null
+                    ? defaultBrowser : configurations.getBrowser());
             configurations.setTimeout(configurations.getTimeout() == null
                     ? Duration.ofMillis(defaultTimeout)
                     : configurations.getTimeout());
@@ -123,6 +128,11 @@ public class Configurations {
                         SystemPropertyKey.REPORTS,
                         EnvironmentKey.REPORTS,
                         configurations.getReports()));
+        configurations.setBrowser(
+                resolveValueWithPriority(
+                        SystemPropertyKey.BROWSER,
+                        EnvironmentKey.BROWSER,
+                        configurations.getBrowser()));
         configurations.setTimeout(
                 resolveValueWithPriority(
                         SystemPropertyKey.TIMEOUT,

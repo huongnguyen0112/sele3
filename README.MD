@@ -15,21 +15,37 @@ A Java and Maven test automation project built around Selenium WebDriver and Tes
 
 - JDK 25 (the Maven compiler is configured with `release` 25).
 - Maven.
-- Chrome and Edge installed to run the default TestNG suite, which launches both browsers in parallel.
+- The browser selected for the TestNG run installed; the GitHub Actions default is Chrome.
 
 ## Run the tests
 
 From the project root:
 
 ```bash
-mvn test
+mvn test -Dsurefire.suiteXmlFiles=TestNG.xml
 ```
 
-The default [TestNG.xml](TestNG.xml) suite runs `SearchTests` with separate Chrome and Edge configurations. `BaseTest` loads the selected browser configuration before each test and closes the driver afterward.
+The default [TestNG.xml](TestNG.xml) suite is also run by the GitHub Actions workflow. The workflow runs tests for pull requests targeting `main`, and tests and publishes a Maven package to GitHub Packages on pushes to `main`, version tags (`v*`), and manual runs.
+
+To run the Maven deployment locally, configure a Maven server with id `github` and credentials for GitHub Packages, then run `mvn deploy`.
+
+### GitHub Actions inputs
+
+When starting the workflow manually, these inputs configure the TestNG run:
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `suiteXmlFile` | `TestNG.xml` | TestNG suite XML file passed to Maven Surefire. |
+| `browser` | `chrome` | Browser provider (`chrome`, `edge`, or `firefox`). |
+| `reports` | `allure` | Report provider (`allure` or `extent`). |
+| `timeout` | `5000` | Explicit wait timeout in milliseconds. |
+| `pollingInterval` | `200` | Wait polling interval in milliseconds. |
+
+The workflow uploads generated Allure results or Extent reports as a `test-reports` artifact.
 
 ## Configuration
 
-Browser settings are loaded from `src/test/resources/configs/` using the `config` parameter in `TestNG.xml`. The repository includes `chrome.json` and `edge.json`. A browser configuration can set:
+Browser settings are loaded from `src/test/resources/configs/` by browser name. The repository includes `chrome.json`, `firefox.json`, and `edge.json`; choose the browser with the `browser` JVM property or `BROWSER` environment variable. A browser configuration can set:
 
 | Setting | Description |
 | --- | --- |
@@ -39,10 +55,11 @@ Browser settings are loaded from `src/test/resources/configs/` using the `config
 | `remoteUrl` | Selenium remote endpoint; an empty string starts a local browser. |
 | `headless` | Whether to start the browser in headless mode. |
 
-Report and wait defaults are in `src/test/resources/configs/configurations.json`. Its current settings select Allure, a 4-second wait timeout, and a 200-millisecond polling interval. The following overrides take precedence over that file:
+Report and wait defaults are in `src/test/resources/configs/configurations.json`. The following overrides take precedence over that file:
 
 | Setting | JVM system property | Environment variable |
 | --- | --- | --- |
+| Browser provider | `browser` | `BROWSER` |
 | Report provider | `reports` | `REPORTS` |
 | Wait timeout in milliseconds | `timeout` | `TIMEOUT` |
 | Wait polling interval in milliseconds | `pollingInterval` | `POLLING_INTERVAL` |

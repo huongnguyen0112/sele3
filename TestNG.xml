@@ -1,21 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="Test Suite" thread-count="2" parallel="tests">
-    <listeners>
-        <listener class-name="com.internet.assertions.AssertListener"/>
-    </listeners>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 
-    <test name="EdgeTest">
-        <parameter name="config" value="edge.json" />
+<suite name="Parallel Suite" thread-count="2" parallel="methods" >
+    <test name="Parallel Tests">
         <classes>
-            <class name="com.internet.tests.SearchTests"/>
-        </classes>
-    </test>
-
-    <test name="ChromeTest">
-        <parameter name="config" value="chrome.json" />
-        <classes>
-            <class name="com.internet.tests.SearchTests"/>
+            <class name="com.internet.tests.ParallelTests"/>
         </classes>
     </test>
 </suite>

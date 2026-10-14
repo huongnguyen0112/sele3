@@ -6,13 +6,13 @@ import com.internet.pages.Homepage;
 import com.internet.reports.ReportProvider;
 import com.internet.webdriver.DriverProvider;
 
-public class SearchTests extends BaseTest {
+public class DemoTests extends BaseTest {
 
     /**
-     * Executes the example search workflow for the home page links and dropdown interactions.
+     * Executes the example demo workflow for the home page links and dropdown interactions.
      */
     @Test 
-    public void testSearch() {
+    public void testDemo() {
         Homepage homepage = new Homepage();
 
         ReportProvider.step("1. Step 1: Open home page");
