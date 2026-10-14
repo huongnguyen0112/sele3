@@ -21,6 +21,11 @@ public class AllureReportProvider implements ReportProviderInterface {
         Allure.step(message);
     }
 
+    /**
+     * Records a failed step in the Allure report.
+     *
+     * @param message the failure message to record
+     */
     @Override
     public void fail(String message) {
         Allure.step(message, Status.FAILED);

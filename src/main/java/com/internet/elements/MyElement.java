@@ -207,6 +207,12 @@ public class MyElement {
         return isStable(Duration.ZERO);
     }
 
+    /**
+     * Determines whether the element remains visually unchanged for the specified duration.
+     *
+     * @param duration the maximum time to wait for the element to stabilize
+     * @return {@code true} when the element is stable, otherwise {@code false}
+     */
     public boolean isStable(Duration duration) {
         String script = """
                 const element = arguments[0];
@@ -259,6 +265,12 @@ public class MyElement {
         return isNotOverlaid(Duration.ZERO);
     }
 
+    /**
+     * Checks whether the element is not covered by another element while waiting for a stable state.
+     *
+     * @param duration the maximum time to wait for the overlay check to pass
+     * @return {@code true} when the element is visible and not obscured, otherwise {@code false}
+     */
     public boolean isNotOverlaid(Duration duration) {
         String script = """
                 const element = arguments[0];
@@ -285,6 +297,12 @@ public class MyElement {
         return isDisplayed(Duration.ZERO);
     }
 
+    /**
+     * Waits until the element is displayed or the timeout expires.
+     *
+     * @param duration the maximum time to wait for the element to become visible
+     * @return {@code true} once the element becomes visible, otherwise {@code false}
+     */
     public boolean isDisplayed(Duration duration) {
         try {
             return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isDisplayed()), duration);
@@ -302,6 +320,12 @@ public class MyElement {
         return isEnabled(Duration.ZERO);
     }
 
+    /**
+     * Waits until the element is enabled or the timeout expires.
+     *
+     * @param duration the maximum time to wait for the element to become enabled
+     * @return {@code true} when the element is enabled, otherwise {@code false}
+     */
     public boolean isEnabled(Duration duration) {
         return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isEnabled()), duration);
     }
@@ -315,6 +339,12 @@ public class MyElement {
         return isChecked(Duration.ZERO);
     }
 
+    /**
+     * Waits until the element is selected or checked before returning.
+     *
+     * @param duration the maximum time to wait for the selected state
+     * @return {@code true} when the element is selected, otherwise {@code false}
+     */
     public boolean isChecked(Duration duration) {
         return checkWithRetry(
             webElement -> Boolean.TRUE.equals(webElement.isSelected()),
@@ -324,10 +354,21 @@ public class MyElement {
         );
     }
 
+    /**
+     * Waits for the supplied conditions to become true on this element.
+     *
+     * @param conditions the element conditions to evaluate
+     */
     public void waitFor(ElementCondition... conditions) {
         waitFor(null, conditions);
     }
 
+    /**
+     * Waits for the supplied conditions to become true within the given timeout.
+     *
+     * @param duration the maximum amount of time to wait, or {@code null} for the default timeout
+     * @param conditions the element conditions to evaluate
+     */
     public void waitFor(Duration duration, ElementCondition... conditions) {
         MyWait wait = myWait().configuredWait("Waiting for element to be: " + this.locator, duration);
         wait.waitUntil(conditions);

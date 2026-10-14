@@ -23,6 +23,11 @@ public final class MyHardAssert {
     private MyHardAssert() {
     }
 
+    /**
+     * Captures a screenshot for the supplied assertion message when reporting fails.
+     *
+     * @param message the assertion description used for the screenshot name
+     */
     private static void captureScreenshot(String message) {
         try {
             ReportProvider.screenshot(message);
@@ -111,6 +116,12 @@ public final class MyHardAssert {
         return failure;
     }
 
+    /**
+     * Formats a duration into a compact human-readable string for assertion output.
+     *
+     * @param duration the duration to convert
+     * @return the formatted duration text
+     */
     private static String formatDuration(Duration duration) {
         long seconds = duration.getSeconds();
         int nanos = duration.getNano();

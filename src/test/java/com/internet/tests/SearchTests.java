@@ -8,6 +8,9 @@ import com.internet.webdriver.DriverProvider;
 
 public class SearchTests extends BaseTest {
 
+    /**
+     * Executes the example search workflow for the home page links and dropdown interactions.
+     */
     @Test 
     public void testSearch() {
         Homepage homepage = new Homepage();
