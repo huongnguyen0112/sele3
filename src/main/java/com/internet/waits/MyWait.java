@@ -59,12 +59,24 @@ public class MyWait extends FluentWait<WebDriver> {
             return true;
         });
     }
-    
-    
+
+    /**
+     * Applies the default configured timeout and polling settings with a custom wait message.
+     *
+     * @param message message shown when the wait times out
+     * @return this wait instance updated with the supplied message
+     */
     public MyWait configuredWait(String message) {
         return configuredWait(message, null);
     }
 
+    /**
+     * Applies a custom timeout and polling configuration for this wait with a descriptive message.
+     *
+     * @param message message shown when the wait times out
+     * @param duration custom timeout to use for this wait; if {@code null}, the default timeout is retained
+     * @return this wait instance updated with the custom timeout settings
+     */
     public MyWait configuredWait(String message, Duration duration) {
         configuredTimeout = duration == null ? timeout : duration;
         super.withTimeout(configuredTimeout)

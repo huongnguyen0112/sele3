@@ -17,35 +17,35 @@ public final class MySoftAssert {
     private static final ThreadLocal<List<AssertionError>> failures = ThreadLocal.withInitial(ArrayList::new);
 
     /**
-     * Starts collecting integer assertions in this soft assertion collector.
+     * Starts collecting integer assertions.
      *
      * @param actual value being checked
      * @return an integer assertion object
-     * <p>Example: {@code softly.assertThat(resultCount).isGreaterThan(0);}</p>
+     * <p>Example: {@code MySoftAssert.assertThat(resultCount).isGreaterThan(0);}</p>
      */
-    public IntAssert assertThat(int actual) {
+    public static IntAssert assertThat(int actual) {
         return new IntAssert(actual);
     }
 
     /**
-     * Starts collecting string assertions in this soft assertion collector.
+     * Starts collecting string assertions.
      *
      * @param actual value being checked
      * @return a string assertion object
-     * <p>Example: {@code softly.assertThat(pageTitle).contains("Results");}</p>
+     * <p>Example: {@code MySoftAssert.assertThat(pageTitle).contains("Results");}</p>
      */
-    public StringAssert assertThat(String actual) {
+    public static StringAssert assertThat(String actual) {
         return new StringAssert(actual);
     }
 
     /**
-     * Starts collecting boolean assertions in this soft assertion collector.
+     * Starts collecting boolean assertions.
      *
      * @param actual value being checked
      * @return a boolean assertion object
-     * <p>Example: {@code softly.assertThat(isLoggedIn).isTrue();}</p>
+     * <p>Example: {@code MySoftAssert.assertThat(isLoggedIn).isTrue();}</p>
      */
-    public BooleanAssert assertThat(boolean actual) {
+    public static BooleanAssert assertThat(boolean actual) {
         return new BooleanAssert(actual);
     }
 
@@ -55,9 +55,9 @@ public final class MySoftAssert {
      * @param element the element to assert
      * @return an assertion object for the element
      * @throws NullPointerException if {@code element} is {@code null}
-     * <p>Example: {@code softly.assertThat(searchBox).isDisplayed();}</p>
+     * <p>Example: {@code MySoftAssert.assertThat(searchBox).isDisplayed();}</p>
      */
-    public ElementAssert assertThat(MyElement element) {
+    public static ElementAssert assertThat(MyElement element) {
         return assertThat(element, null);
     }
 
@@ -68,20 +68,20 @@ public final class MySoftAssert {
      * @param timeout maximum time to wait, or {@code null} to use the configured timeout
      * @return an assertion object for the element
      * @throws NullPointerException if {@code element} is {@code null}
-     * <p>Example: {@code softly.assertThat(searchBox, Duration.ofSeconds(5)).isEnabled();}</p>
+     * <p>Example: {@code MySoftAssert.assertThat(searchBox, Duration.ofSeconds(5)).isEnabled();}</p>
      */
-    public ElementAssert assertThat(MyElement element, Duration timeout) {
+    public static ElementAssert assertThat(MyElement element, Duration timeout) {
         Objects.requireNonNull(element, "element must not be null");
         return new ElementAssert(element, timeout);
     }
 
     /**
-     * Throws one error containing all failures collected by this instance.
+     * Throws one error containing all failures collected on the current thread.
      * Call this after completing the soft assertions in a test; failures
      * reported here are cleared and will not be reported again automatically.
      *
      * @throws AssertionError if one or more assertions failed
-     * <p>Example: {@code softly.assertAll();}</p>
+     * <p>Example: {@code MySoftAssert.assertAll();}</p>
      */
     public static void assertAll() {
         List<AssertionError> threadFailures = failures.get();
@@ -102,13 +102,13 @@ public final class MySoftAssert {
     /**
      * Fluent soft assertions for integer values.
      *
-     * <p>Example: {@code softly.assertThat(count).isGreaterThan(0);}</p>
+     * <p>Example: {@code MySoftAssert.assertThat(count).isGreaterThan(0);}</p>
      */
-    public final class IntAssert {
+    public static final class IntAssert {
         private final int actual;
 
         /**
-         * Creates an integer assertion bound to the enclosing collector.
+         * Creates an integer assertion for the supplied value.
          *
          * @param actual value being checked
          */
@@ -121,7 +121,7 @@ public final class MySoftAssert {
          *
          * @param expected value expected to equal the actual value
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat(3).isEqualTo(3);}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(3).isEqualTo(3);}</p>
          */
         public IntAssert isEqualTo(int expected) {
             record(() -> MyHardAssert.assertThat(actual).isEqualTo(expected));
@@ -133,7 +133,7 @@ public final class MySoftAssert {
          *
          * @param expected value that must not equal the actual value
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat(3).isNotEqualTo(0);}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(3).isNotEqualTo(0);}</p>
          */
         public IntAssert isNotEqualTo(int expected) {
             record(() -> MyHardAssert.assertThat(actual).isNotEqualTo(expected));
@@ -145,7 +145,7 @@ public final class MySoftAssert {
          *
          * @param expected exclusive lower bound
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat(3).isGreaterThan(0);}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(3).isGreaterThan(0);}</p>
          */
         public IntAssert isGreaterThan(int expected) {
             record(() -> MyHardAssert.assertThat(actual).isGreaterThan(expected));
@@ -157,7 +157,7 @@ public final class MySoftAssert {
          *
          * @param expected exclusive upper bound
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat(3).isLessThan(10);}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(3).isLessThan(10);}</p>
          */
         public IntAssert isLessThan(int expected) {
             record(() -> MyHardAssert.assertThat(actual).isLessThan(expected));
@@ -168,13 +168,13 @@ public final class MySoftAssert {
     /**
      * Fluent soft assertions for string values.
      *
-     * <p>Example: {@code softly.assertThat(title).contains("Search");}</p>
+     * <p>Example: {@code MySoftAssert.assertThat(title).contains("Search");}</p>
      */
-    public final class StringAssert {
+    public static final class StringAssert {
         private final String actual;
 
         /**
-         * Creates a string assertion bound to the enclosing collector.
+         * Creates a string assertion for the supplied value.
          *
          * @param actual value being checked; may be {@code null}
          */
@@ -187,7 +187,7 @@ public final class MySoftAssert {
          *
          * @param expected value expected to equal the actual value; may be {@code null}
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat("Home").isEqualTo("Home");}</p>
+         * <p>Example: {@code MySoftAssert.assertThat("Home").isEqualTo("Home");}</p>
          */
         public StringAssert isEqualTo(String expected) {
             record(() -> MyHardAssert.assertThat(actual).isEqualTo(expected));
@@ -199,7 +199,7 @@ public final class MySoftAssert {
          *
          * @param expected value that must not equal the actual value; may be {@code null}
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat("Home").isNotEqualTo("Login");}</p>
+         * <p>Example: {@code MySoftAssert.assertThat("Home").isNotEqualTo("Login");}</p>
          */
         public StringAssert isNotEqualTo(String expected) {
             record(() -> MyHardAssert.assertThat(actual).isNotEqualTo(expected));
@@ -211,7 +211,7 @@ public final class MySoftAssert {
          *
          * @param expected substring that must be present; must not be {@code null}
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat("Search results").contains("results");}</p>
+         * <p>Example: {@code MySoftAssert.assertThat("Search results").contains("results");}</p>
          */
         public StringAssert contains(String expected) {
             record(() -> MyHardAssert.assertThat(actual).contains(expected));
@@ -222,7 +222,7 @@ public final class MySoftAssert {
          * Collects a check that the actual string is non-null and empty.
          *
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat("").isEmpty();}</p>
+         * <p>Example: {@code MySoftAssert.assertThat("").isEmpty();}</p>
          */
         public StringAssert isEmpty() {
             record(() -> MyHardAssert.assertThat(actual).isEmpty());
@@ -233,13 +233,13 @@ public final class MySoftAssert {
     /**
      * Fluent soft assertions for boolean values.
      *
-     * <p>Example: {@code softly.assertThat(isReady).isTrue();}</p>
+     * <p>Example: {@code MySoftAssert.assertThat(isReady).isTrue();}</p>
      */
-    public final class BooleanAssert {
+    public static final class BooleanAssert {
         private final boolean actual;
 
         /**
-         * Creates a boolean assertion bound to the enclosing collector.
+         * Creates a boolean assertion for the supplied value.
          *
          * @param actual value being checked
          */
@@ -251,7 +251,7 @@ public final class MySoftAssert {
          * Collects a check that the actual value is {@code true}.
          *
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat(isLoggedIn).isTrue();}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(isLoggedIn).isTrue();}</p>
          */
         public BooleanAssert isTrue() {
             record(() -> MyHardAssert.assertThat(actual).isTrue());
@@ -262,7 +262,7 @@ public final class MySoftAssert {
          * Collects a check that the actual value is {@code false}.
          *
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat(isLoggedOut).isFalse();}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(isLoggedOut).isFalse();}</p>
          */
         public BooleanAssert isFalse() {
             record(() -> MyHardAssert.assertThat(actual).isFalse());
@@ -274,7 +274,7 @@ public final class MySoftAssert {
          *
          * @param expected value expected to equal the actual value
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat(isLoggedIn).isEqualTo(true);}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(isLoggedIn).isEqualTo(true);}</p>
          */
         public BooleanAssert isEqualTo(boolean expected) {
             record(() -> MyHardAssert.assertThat(actual).isEqualTo(expected));
@@ -285,14 +285,14 @@ public final class MySoftAssert {
     /**
      * Fluent soft assertions for a web element's state and text.
      *
-     * <p>Example: {@code softly.assertThat(button).isDisplayed().isEnabled();}</p>
+     * <p>Example: {@code MySoftAssert.assertThat(button).isDisplayed().isEnabled();}</p>
      */
-    public final class ElementAssert {
+    public static final class ElementAssert {
         private final MyElement element;
         private final Duration timeout;
 
         /**
-         * Creates an element assertion bound to the enclosing collector.
+         * Creates an element assertion for the supplied element.
          *
          * @param element element being checked
          * @param timeout maximum wait time, or {@code null} to use the configured timeout
@@ -306,7 +306,7 @@ public final class MySoftAssert {
          * Collects a check that the element becomes displayed.
          *
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat(searchBox).isDisplayed();}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(searchBox).isDisplayed();}</p>
          */
         public ElementAssert isDisplayed() {
             return check(assertion -> assertion.isDisplayed());
@@ -316,7 +316,7 @@ public final class MySoftAssert {
          * Collects a check that the element becomes enabled.
          *
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat(submitButton).isEnabled();}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(submitButton).isEnabled();}</p>
          */
         public ElementAssert isEnabled() {
             return check(assertion -> assertion.isEnabled());
@@ -326,7 +326,7 @@ public final class MySoftAssert {
          * Collects a check that the element becomes checked.
          *
          * @return this assertion object for chaining
-         * <p>Example: {@code softly.assertThat(termsCheckbox).isChecked();}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(termsCheckbox).isChecked();}</p>
          */
         public ElementAssert isChecked() {
             return check(assertion -> assertion.isChecked());
@@ -338,7 +338,7 @@ public final class MySoftAssert {
          * @param expectedText expected text; must not be {@code null}
          * @return this assertion object for chaining
          * @throws NullPointerException if {@code expectedText} is {@code null}
-         * <p>Example: {@code softly.assertThat(heading).hasText("Search");}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(heading).hasText("Search");}</p>
          */
         public ElementAssert hasText(String expectedText) {
             Objects.requireNonNull(expectedText, "expectedText must not be null");
@@ -351,7 +351,7 @@ public final class MySoftAssert {
          * @param expectedText expected substring; must not be {@code null}
          * @return this assertion object for chaining
          * @throws NullPointerException if {@code expectedText} is {@code null}
-         * <p>Example: {@code softly.assertThat(heading).containsText("Search");}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(heading).containsText("Search");}</p>
          */
         public ElementAssert containsText(String expectedText) {
             Objects.requireNonNull(expectedText, "expectedText must not be null");
@@ -365,7 +365,7 @@ public final class MySoftAssert {
          * @param condition condition to evaluate while waiting
          * @return this assertion object for chaining
          * @throws NullPointerException if either argument is {@code null}
-         * <p>Example: {@code softly.assertThat(searchBox).satisfies("to contain query", element -> "Selenium".equals(element.element().getAttribute("value")));}</p>
+         * <p>Example: {@code MySoftAssert.assertThat(searchBox).satisfies("to contain query", element -> "Selenium".equals(element.element().getAttribute("value")));}</p>
          */
         public ElementAssert satisfies(String expectation, ElementCondition condition) {
             Objects.requireNonNull(expectation, "expectation must not be null");
@@ -392,7 +392,7 @@ public final class MySoftAssert {
      *
      * @param assertion assertion operation to run
      */
-    private void record(Runnable assertion) {
+    private static void record(Runnable assertion) {
         try {
             assertion.run();
         } catch (AssertionError failure) {

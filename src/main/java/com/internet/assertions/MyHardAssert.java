@@ -454,21 +454,9 @@ public final class MyHardAssert {
                 wait.waitUntil(condition);
             } catch (MyWaitException e) {
                 Throwable cause = e.getCause();
-                String reason;
-                if (cause instanceof NoSuchElementException) {
-                    reason = "the element does not exist";
-                } else if (cause instanceof StaleElementReferenceException) {
-                    reason = "the element is stale (no longer attached to the DOM)";
-                } else if (cause instanceof ElementNotInteractableException) {
-                    reason = "the element is not interactable";
-                } else if (cause instanceof InvalidElementStateException) {
-                    reason = "the element is in an invalid state";
-                } else {
-                    reason = "the condition was not met";
-                }
                 throw failure("Timed out waiting for the element (find by: " + element.byClassString() + "; locator: '"
                         + element.locatorString() + "') " + expectation + " within "
-                        + formatDuration(wait.getConfiguredTimeout()) + ". Reason: " + reason
+                        + formatDuration(wait.getConfiguredTimeout())
                         + (cause != null && cause.getMessage() != null
                                 ? " (" + cause.getClass().getSimpleName() + ": "
                                         + cause.getMessage().split("\\R", 2)[0] + ")"

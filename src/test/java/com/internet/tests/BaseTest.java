@@ -26,7 +26,7 @@ public class BaseTest {
         ReportProvider.start("zzz");
         DriverConfig driverConfig = DriverConfig.loadFromFile(configFile);
         DriverProvider.startWebDriver(driverConfig);
-        DriverProvider.getWebDriver().manage().window().maximize();
+        DriverProvider.maximizeWindow();
     }
 
     /**
@@ -34,7 +34,7 @@ public class BaseTest {
      */
     @AfterMethod
     public void afterMethod() {
-        DriverProvider.getWebDriver().quit();
+        DriverProvider.quitWebDriver();
         ReportProvider.finish("zzz");
     }
 }

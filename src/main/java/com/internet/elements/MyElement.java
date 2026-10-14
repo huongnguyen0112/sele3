@@ -16,6 +16,7 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
 
 import com.internet.webdriver.DriverProvider;
 
@@ -101,8 +102,7 @@ public class MyElement {
                         NoSuchElementException.class,
                         StaleElementReferenceException.class,
                         ElementNotInteractableException.class,
-                        InvalidElementStateException.class,
-                        TimeoutException.class
+                        InvalidElementStateException.class
                 },
                 null,
                 conditions);
@@ -124,8 +124,7 @@ public class MyElement {
                 new Class[] {
                         NoSuchElementException.class,
                         StaleElementReferenceException.class,
-                        InvalidElementStateException.class,
-                        TimeoutException.class
+                        InvalidElementStateException.class
                 },
                 null,
                 conditions);
@@ -145,8 +144,7 @@ public class MyElement {
                 new Class[] {
                         NoSuchElementException.class,
                         StaleElementReferenceException.class,
-                        ElementNotInteractableException.class,
-                        TimeoutException.class
+                        ElementNotInteractableException.class
                 },
                 duration,
                 conditions);
@@ -347,6 +345,51 @@ public class MyElement {
     }
 
     /**
+     * Scrolls the element into view before clicking it.
+     */
+    public void clickWithScroll() {
+        clickWithScroll("center", "auto", "nearest");
+    }
+
+    /**
+     * Scrolls the element into view using the supplied alignment and behavior before clicking it.
+     *
+     * @param block    vertical alignment: {@code start}, {@code center},
+     *                 {@code end}, or {@code nearest}
+     * @param behavior scroll behavior: {@code auto}, {@code instant}, or
+     *                 {@code smooth}
+     * @param inline   horizontal alignment: {@code start}, {@code center},
+     *                 {@code end}, or {@code nearest}
+     */
+    public void clickWithScroll(String block, String behavior, String inline) {
+        scrollIntoView(block, behavior, inline);
+        click();
+    }
+
+
+    /**
+     * Double-clicks the element after waiting for it to be actionable.
+     */
+    public void doubleClick() {
+        actionWithRetry(
+                element -> new Actions(webDriver()).doubleClick(element).perform(),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
+     * Opens the element's context menu after waiting for it to be actionable.
+     */
+    public void rightClick() {
+        actionWithRetry(
+                element -> new Actions(webDriver()).contextClick(element).perform(),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
      * Hovers over the center of the element and dispatches a mouseover event.
      */
     public void hover() {
@@ -357,11 +400,113 @@ public class MyElement {
     }
 
     /**
+     * Selects an option in a native {@code <select>} element by its visible text.
+     *
+     * @param visibleText the exact visible text of the option
+     */
+    public void selectByVisibleText(String visibleText) {
+        actionWithRetry(
+                element -> new Select(element).selectByVisibleText(visibleText),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
+     * Selects an option in a native {@code <select>} element by its value.
+     *
+     * @param value the value attribute of the option
+     */
+    public void selectByValue(String value) {
+        actionWithRetry(
+                element -> new Select(element).selectByValue(value),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
+     * Selects an option in a native {@code <select>} element by its zero-based index.
+     *
+     * @param index the zero-based index of the option
+     */
+    public void selectByIndex(int index) {
+        actionWithRetry(
+                element -> new Select(element).selectByIndex(index),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
+     * Returns the visible text of the first selected option in a native
+     * {@code <select>} element.
+     *
+     * @return the selected option's visible text
+     */
+    public String getSelectedOptionText() {
+        return getWithRetry(
+                element -> new Select(element).getFirstSelectedOption().getText(),
+                ElementConditions.VISIBLE);
+    }
+
+    /**
+     * Drags this element onto the target element.
+     *
+     * @param target the drop target
+     */
+    public void dragAndDrop(MyElement target) {
+        target.waitFor(
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+        actionWithRetry(
+                source -> new Actions(webDriver()).dragAndDrop(source, target.element()).perform(),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
+     * Drags this element by the supplied offset.
+     *
+     * @param xOffset the horizontal distance in pixels
+     * @param yOffset the vertical distance in pixels
+     */
+    public void dragAndDropBy(int xOffset, int yOffset) {
+        actionWithRetry(
+                element -> new Actions(webDriver()).dragAndDropBy(element, xOffset, yOffset).perform(),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
      * Scrolls the element into the center of the viewport.
      */
-   public void scrollIntoView() {
-        String script = "arguments[0].scrollIntoView({ block: 'center', inline: 'nearest' });";
-        actionWithRetry(element -> Utilities.executeJavaScript(script, element));
+    public void scrollIntoView() {
+        scrollIntoView("center", "auto", "nearest");
+    }
+
+    /**
+     * Scrolls the element into view using the supplied alignment and behavior.
+     *
+     * @param block    vertical alignment: {@code start}, {@code center},
+     *                 {@code end}, or {@code nearest}
+     * @param behavior scroll behavior: {@code auto}, {@code instant}, or
+     *                 {@code smooth}
+     * @param inline   horizontal alignment: {@code start}, {@code center},
+     *                 {@code end}, or {@code nearest}
+     */
+    public void scrollIntoView(String block, String behavior, String inline) {
+        String script = """
+                arguments[0].scrollIntoView({
+                    block: arguments[1],
+                    behavior: arguments[2],
+                    inline: arguments[3]
+                });
+                """;
+        actionWithRetry(element -> Utilities.executeJavaScript(script, element, block, behavior, inline));
     }
 
     /**
