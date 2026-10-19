@@ -5,6 +5,7 @@
     <test name="Parallel Tests">
         <classes>
             <class name="com.internet.tests.ParallelTests"/>
+            <class name="com.internet.tests.DemoTests"/>
         </classes>
     </test>
 </suite>
