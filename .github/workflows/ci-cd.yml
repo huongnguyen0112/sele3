@@ -1,0 +1,106 @@
+name: Test and publish Maven package
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      suiteXmlFile:
+        description: TestNG suite XML file
+        required: true
+        default: TestNG.xml
+        type: string
+      browser:
+        description: Browser to run the tests with
+        required: true
+        default: chrome
+        type: choice
+        options:
+          - chrome
+          - edge
+          - firefox
+      reports:
+        description: Test report provider
+        required: true
+        default: allure
+        type: choice
+        options:
+          - allure
+          - extent
+      timeout:
+        description: Explicit wait timeout in milliseconds
+        required: true
+        default: "5000"
+        type: string
+      pollingInterval:
+        description: Wait polling interval in milliseconds
+        required: true
+        default: "200"
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  test-and-publish:
+    runs-on: ubuntu-latest
+    env:
+      SUITE_XML_FILE: ${{ inputs.suiteXmlFile || 'TestNG.xml' }}
+      BROWSER: ${{ inputs.browser || 'chrome' }}
+      REPORTS: ${{ inputs.reports || 'allure' }}
+      TIMEOUT: ${{ inputs.timeout || '5000' }}
+      POLLING_INTERVAL: ${{ inputs.pollingInterval || '200' }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java and GitHub Packages credentials
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: Run TestNG suite
+        if: github.event_name == 'pull_request'
+        run: |
+          mvn --batch-mode test \
+            "-Dsurefire.suiteXmlFiles=$SUITE_XML_FILE" \
+            "-Dbrowser=$BROWSER" \
+            "-Dreports=$REPORTS" \
+            "-Dtimeout=$TIMEOUT" \
+            "-DpollingInterval=$POLLING_INTERVAL"
+
+      - name: Test and publish to GitHub Packages
+        if: github.event_name != 'pull_request'
+        run: |
+          mvn --batch-mode deploy \
+            "-Dsurefire.suiteXmlFiles=$SUITE_XML_FILE" \
+            "-Dbrowser=$BROWSER" \
+            "-Dreports=$REPORTS" \
+            "-Dtimeout=$TIMEOUT" \
+            "-DpollingInterval=$POLLING_INTERVAL"
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            target/allure-results/
+            ExtentReports/
+          if-no-files-found: ignore
+          retention-days: 14

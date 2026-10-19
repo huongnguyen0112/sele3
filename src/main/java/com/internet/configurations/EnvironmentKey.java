@@ -1,6 +1,7 @@
 package com.internet.configurations;
 
 public class EnvironmentKey {
+    public static final String BROWSER = "BROWSER";
     public static final String ENV = "ENV";
     public static final String TEST = "TEST";
     public static final String SUITE = "SUITE";

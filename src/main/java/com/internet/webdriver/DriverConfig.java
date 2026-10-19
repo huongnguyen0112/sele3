@@ -1,5 +1,6 @@
 package com.internet.webdriver;
 
+import com.internet.configurations.Configurations;
 import com.internet.utils.JsonHelper;
 import lombok.Builder;
 import lombok.Getter;
@@ -60,5 +61,15 @@ public class DriverConfig {
         String jsonConfigFile = "src/test/resources/configs/" + fileName;
         log.debug("Loading configuration from json file {}", jsonConfigFile);
         return JsonHelper.fromJsonFile(jsonConfigFile, DriverConfig.class);
+    }
+
+    /**
+     * Loads a driver configuration based on browser name from the configuration resource JSON file.
+     *
+     * @return deserialized driver configuration
+     */
+    public static DriverConfig init() {
+        String fileName = Configurations.init().getBrowser() + ".json";
+        return loadFromFile(fileName);
     }
 }

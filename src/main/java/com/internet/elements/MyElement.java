@@ -1,7 +1,5 @@
 package com.internet.elements;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
@@ -14,11 +12,16 @@ import org.openqa.selenium.ElementNotInteractableException;
 import org.openqa.selenium.InvalidElementStateException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
 
 import com.internet.webdriver.DriverProvider;
+
+import lombok.extern.slf4j.Slf4j;
+
 import com.internet.utils.Utilities;
 import com.internet.waits.ElementCondition;
 import com.internet.waits.ElementConditions;
@@ -28,6 +31,7 @@ import com.internet.waits.MyWait;
  * Represents a lazily located element and provides state checks, waits, and
  * user interactions for a specific locator.
  */
+@Slf4j 
 public class MyElement {
     protected By by;
     private Class<?> byClass;
@@ -44,6 +48,24 @@ public class MyElement {
         String byString = by.toString();
         int separator = byString.indexOf(": ");
         this.locator = separator >= 0 ? byString.substring(separator + 2) : byString;
+    }
+
+    /**
+     * Returns the Selenium locator string used to find this element.
+     *
+     * @return the locator
+     */
+    public String locatorString() {
+        return locator;
+    }
+
+    /**
+     * Returns the Selenium byClass string used to find this element.
+     *
+     * @return the byClass
+     */
+    public String byClassString() {
+        return byClass.getSimpleName();
     }
 
     /**
@@ -115,8 +137,8 @@ public class MyElement {
      * @return the Boolean result of the check
      */
     @SuppressWarnings("unchecked")
-        private Boolean checkWithRetry(Function<WebElement, Boolean> checker, Duration duration,
-            ElementCondition... conditions) {
+    private Boolean checkWithRetry(Function<WebElement, Boolean> checker, Duration duration,
+        ElementCondition... conditions) {
         return withRetry(
                 () -> checker.apply(element()),
                 new Class[] {
@@ -185,6 +207,12 @@ public class MyElement {
         return isStable(Duration.ZERO);
     }
 
+    /**
+     * Determines whether the element remains visually unchanged for the specified duration.
+     *
+     * @param duration the maximum time to wait for the element to stabilize
+     * @return {@code true} when the element is stable, otherwise {@code false}
+     */
     public boolean isStable(Duration duration) {
         String script = """
                 const element = arguments[0];
@@ -237,6 +265,12 @@ public class MyElement {
         return isNotOverlaid(Duration.ZERO);
     }
 
+    /**
+     * Checks whether the element is not covered by another element while waiting for a stable state.
+     *
+     * @param duration the maximum time to wait for the overlay check to pass
+     * @return {@code true} when the element is visible and not obscured, otherwise {@code false}
+     */
     public boolean isNotOverlaid(Duration duration) {
         String script = """
                 const element = arguments[0];
@@ -263,8 +297,18 @@ public class MyElement {
         return isDisplayed(Duration.ZERO);
     }
 
+    /**
+     * Waits until the element is displayed or the timeout expires.
+     *
+     * @param duration the maximum time to wait for the element to become visible
+     * @return {@code true} once the element becomes visible, otherwise {@code false}
+     */
     public boolean isDisplayed(Duration duration) {
-        return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isDisplayed()), duration);
+        try {
+            return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isDisplayed()), duration);
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     /**
@@ -276,6 +320,12 @@ public class MyElement {
         return isEnabled(Duration.ZERO);
     }
 
+    /**
+     * Waits until the element is enabled or the timeout expires.
+     *
+     * @param duration the maximum time to wait for the element to become enabled
+     * @return {@code true} when the element is enabled, otherwise {@code false}
+     */
     public boolean isEnabled(Duration duration) {
         return checkWithRetry(webElement -> Boolean.TRUE.equals(webElement.isEnabled()), duration);
     }
@@ -289,6 +339,12 @@ public class MyElement {
         return isChecked(Duration.ZERO);
     }
 
+    /**
+     * Waits until the element is selected or checked before returning.
+     *
+     * @param duration the maximum time to wait for the selected state
+     * @return {@code true} when the element is selected, otherwise {@code false}
+     */
     public boolean isChecked(Duration duration) {
         return checkWithRetry(
             webElement -> Boolean.TRUE.equals(webElement.isSelected()),
@@ -298,10 +354,21 @@ public class MyElement {
         );
     }
 
+    /**
+     * Waits for the supplied conditions to become true on this element.
+     *
+     * @param conditions the element conditions to evaluate
+     */
     public void waitFor(ElementCondition... conditions) {
         waitFor(null, conditions);
     }
 
+    /**
+     * Waits for the supplied conditions to become true within the given timeout.
+     *
+     * @param duration the maximum amount of time to wait, or {@code null} for the default timeout
+     * @param conditions the element conditions to evaluate
+     */
     public void waitFor(Duration duration, ElementCondition... conditions) {
         MyWait wait = myWait().configuredWait("Waiting for element to be: " + this.locator, duration);
         wait.waitUntil(conditions);
@@ -319,6 +386,51 @@ public class MyElement {
     }
 
     /**
+     * Scrolls the element into view before clicking it.
+     */
+    public void clickWithScroll() {
+        clickWithScroll("center", "auto", "nearest");
+    }
+
+    /**
+     * Scrolls the element into view using the supplied alignment and behavior before clicking it.
+     *
+     * @param block    vertical alignment: {@code start}, {@code center},
+     *                 {@code end}, or {@code nearest}
+     * @param behavior scroll behavior: {@code auto}, {@code instant}, or
+     *                 {@code smooth}
+     * @param inline   horizontal alignment: {@code start}, {@code center},
+     *                 {@code end}, or {@code nearest}
+     */
+    public void clickWithScroll(String block, String behavior, String inline) {
+        scrollIntoView(block, behavior, inline);
+        click();
+    }
+
+
+    /**
+     * Double-clicks the element after waiting for it to be actionable.
+     */
+    public void doubleClick() {
+        actionWithRetry(
+                element -> new Actions(webDriver()).doubleClick(element).perform(),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
+     * Opens the element's context menu after waiting for it to be actionable.
+     */
+    public void rightClick() {
+        actionWithRetry(
+                element -> new Actions(webDriver()).contextClick(element).perform(),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
      * Hovers over the center of the element and dispatches a mouseover event.
      */
     public void hover() {
@@ -329,11 +441,113 @@ public class MyElement {
     }
 
     /**
+     * Selects an option in a native {@code <select>} element by its visible text.
+     *
+     * @param visibleText the exact visible text of the option
+     */
+    public void selectByVisibleText(String visibleText) {
+        actionWithRetry(
+                element -> new Select(element).selectByVisibleText(visibleText),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
+     * Selects an option in a native {@code <select>} element by its value.
+     *
+     * @param value the value attribute of the option
+     */
+    public void selectByValue(String value) {
+        actionWithRetry(
+                element -> new Select(element).selectByValue(value),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
+     * Selects an option in a native {@code <select>} element by its zero-based index.
+     *
+     * @param index the zero-based index of the option
+     */
+    public void selectByIndex(int index) {
+        actionWithRetry(
+                element -> new Select(element).selectByIndex(index),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
+     * Returns the visible text of the first selected option in a native
+     * {@code <select>} element.
+     *
+     * @return the selected option's visible text
+     */
+    public String getSelectedOptionText() {
+        return getWithRetry(
+                element -> new Select(element).getFirstSelectedOption().getText(),
+                ElementConditions.VISIBLE);
+    }
+
+    /**
+     * Drags this element onto the target element.
+     *
+     * @param target the drop target
+     */
+    public void dragAndDrop(MyElement target) {
+        target.waitFor(
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+        actionWithRetry(
+                source -> new Actions(webDriver()).dragAndDrop(source, target.element()).perform(),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
+     * Drags this element by the supplied offset.
+     *
+     * @param xOffset the horizontal distance in pixels
+     * @param yOffset the vertical distance in pixels
+     */
+    public void dragAndDropBy(int xOffset, int yOffset) {
+        actionWithRetry(
+                element -> new Actions(webDriver()).dragAndDropBy(element, xOffset, yOffset).perform(),
+                ElementConditions.VISIBLE,
+                ElementConditions.ENABLED,
+                ElementConditions.STABLE);
+    }
+
+    /**
      * Scrolls the element into the center of the viewport.
      */
-   public void scrollIntoView() {
-        String script = "arguments[0].scrollIntoView({ block: 'center', inline: 'nearest' });";
-        actionWithRetry(element -> Utilities.executeJavaScript(script, element));
+    public void scrollIntoView() {
+        scrollIntoView("center", "auto", "nearest");
+    }
+
+    /**
+     * Scrolls the element into view using the supplied alignment and behavior.
+     *
+     * @param block    vertical alignment: {@code start}, {@code center},
+     *                 {@code end}, or {@code nearest}
+     * @param behavior scroll behavior: {@code auto}, {@code instant}, or
+     *                 {@code smooth}
+     * @param inline   horizontal alignment: {@code start}, {@code center},
+     *                 {@code end}, or {@code nearest}
+     */
+    public void scrollIntoView(String block, String behavior, String inline) {
+        String script = """
+                arguments[0].scrollIntoView({
+                    block: arguments[1],
+                    behavior: arguments[2],
+                    inline: arguments[3]
+                });
+                """;
+        actionWithRetry(element -> Utilities.executeJavaScript(script, element, block, behavior, inline));
     }
 
     /**
